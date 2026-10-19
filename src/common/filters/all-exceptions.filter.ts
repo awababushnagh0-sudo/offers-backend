@@ -1,0 +1,66 @@
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
+import type { Request, Response } from 'express';
+
+export interface ErrorResponse {
+  statusCode: number;
+  error: string;
+  message: string | string[];
+  path: string;
+  timestamp: string;
+}
+
+/**
+ * Gives every error the same JSON shape so the Flutter apps can parse
+ * failures in one place. Unexpected errors are logged and hidden from clients.
+ */
+@Catch()
+export class AllExceptionsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(AllExceptionsFilter.name);
+
+  catch(exception: unknown, host: ArgumentsHost): void {
+    const ctx = host.switchToHttp();
+    const request = ctx.getRequest<Request>();
+    const response = ctx.getResponse<Response>();
+
+    let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    let error = 'Internal Server Error';
+    let message: string | string[] = 'Something went wrong';
+
+    if (exception instanceof HttpException) {
+      statusCode = exception.getStatus();
+      const body = exception.getResponse();
+      if (typeof body === 'string') {
+        message = body;
+        error = exception.name;
+      } else {
+        const { message: bodyMessage, error: bodyError } = body as {
+          message?: string | string[];
+          error?: string;
+        };
+        message = bodyMessage ?? exception.message;
+        error = bodyError ?? exception.name;
+      }
+    } else {
+      this.logger.error(
+        `Unhandled error on ${request.method} ${request.originalUrl}`,
+        exception instanceof Error ? exception.stack : String(exception),
+      );
+    }
+
+    const payload: ErrorResponse = {
+      statusCode,
+      error,
+      message,
+      path: request.originalUrl,
+      timestamp: new Date().toISOString(),
+    };
+    response.status(statusCode).json(payload);
+  }
+}
