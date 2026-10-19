@@ -5,6 +5,7 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
 } from '@nestjs/common';
 import {
@@ -27,6 +28,7 @@ import {
   GoogleSignInDto,
   LoginDto,
   RefreshTokenDto,
+  UpdateProfileDto,
 } from './dto/auth-requests.dto.js';
 import { AuthResponseDto, MeDto } from './dto/auth-responses.dto.js';
 import { SocialTokenVerifier } from './social-token.verifier.js';
@@ -114,6 +116,16 @@ export class AuthController {
   @ApiOperation({ summary: 'The logged-in user and the stores they work at' })
   me(@CurrentUser() user: AuthUser): Promise<MeDto> {
     return this.auth.me(user.id);
+  }
+
+  @Patch('me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update my name or contact phone' })
+  updateMe(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateProfileDto,
+  ): Promise<MeDto> {
+    return this.auth.updateProfile(user.id, dto);
   }
 
   @Post('change-password')

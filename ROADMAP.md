@@ -90,15 +90,21 @@ Decisions:
 - Pausing or ending an offer stops new claims, but **reservations already made can still be redeemed** (the customer may be on the way). An admin removal cancels them.
 - Claim codes are 8 characters without look-alikes (e.g. `ABCD2345`), so they can be typed if the QR won't scan.
 
-## Phase 5: Customer API
+## Phase 5: Customer API ✅
 
-- [ ] Browse offers: nearby (distance from latitude/longitude), by category, ending soon, search
-- [ ] Offer details and store page
-- [ ] Claim an offer (atomic quantity update, active claim limit, strikes, `maxPerUser`), generate the claim code
-- [ ] Count offer views
-- [ ] My claims (active and history), cancel a claim
-- [ ] Follow and unfollow stores
-- [ ] Cron jobs: expire claims (return quantity, add strike), end finished offers
+- [x] Browse live offers (public): nearby with distance to the closest branch, radius (default 25 km), category, store, search; sort by nearest, ending soon, newest, biggest discount
+- [x] Offer page (all branches, closest first, view count) and store page (branches, live offers, followers)
+- [x] Claim an offer: per-customer lock so double taps can't beat the limits; atomic quantity update so offers never oversell; max 3 active reservations; `maxPerUser`; unique 8-character code
+- [x] My claims (all or active), claim details with the QR code, cancel (gives the piece back, no strike)
+- [x] Follow / unfollow stores, list followed stores with live offer counts
+- [x] Edit my name and contact phone (`PATCH /auth/me`)
+- [x] Expiry job every minute: expire claims (piece back, no-show strike; every 3rd strike blocks claiming for 7 days), end finished offers
+- [x] e2e tests, including many customers grabbing the last pieces at once and double taps
+
+Decisions:
+- **Limited offers** hold a piece for the claim window (or until the offer ends, if sooner). **Unlimited offers** give a code valid until the offer ends; they don't count toward the 3-reservation limit and don't give strikes.
+- Browsing filters and sorts live offers in memory (fine for ~100 stores, logs a warning at 1000 live offers).
+- Ended or sold-out offers still open from a shared link and show their state; removed offers and disabled stores return 404.
 
 ## Phase 6: Notifications
 

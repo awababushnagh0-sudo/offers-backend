@@ -1,3 +1,4 @@
+import { IsLibyanPhone } from '../../../common/validation/decorators.js';
 import {
   IsNotEmpty,
   IsOptional,
@@ -69,4 +70,21 @@ export class DevCustomerLoginDto {
   @IsString()
   @MaxLength(100)
   name?: string;
+}
+
+export class UpdateProfileDto {
+  /** @example "Ahmed" */
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(100)
+  name?: string;
+
+  /**
+   * Phone the store can call about a pickup (not verified).
+   * @example "0912345678"
+   */
+  @IsOptional()
+  @IsLibyanPhone()
+  contactPhone?: string;
 }

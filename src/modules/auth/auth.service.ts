@@ -10,6 +10,7 @@ import type { Env } from '../../config/env.validation.js';
 import { PrismaService } from '../../database/prisma.service.js';
 import type { User } from '../../generated/prisma/client.js';
 import { AuthProvider, UserRole } from '../../generated/prisma/enums.js';
+import type { UpdateProfileDto } from './dto/auth-requests.dto.js';
 import type {
   AuthResponseDto,
   MeDto,
@@ -106,6 +107,11 @@ export class AuthService {
     await this.tokens.revokeAllForUser(userId);
     const tokens = await this.tokens.issue(updated, userAgent);
     return { ...tokens, user: toUserDto(updated) };
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<MeDto> {
+    await this.prisma.user.update({ where: { id: userId }, data: dto });
+    return this.me(userId);
   }
 
   async me(userId: string): Promise<MeDto> {

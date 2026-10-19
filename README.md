@@ -48,9 +48,14 @@ Users on a temporary password (new merchants, reset passwords, new admins) get `
 | Prefix | Who | Notes |
 |---|---|---|
 | `/api/v1/auth` | Everyone | Login, tokens, profile |
-| `/api/v1/categories` | Public | |
+| `/api/v1/categories`, `/api/v1/offers`, `/api/v1/stores/:id` | Public | Browsing; send `lat`/`lng` for distances |
+| `/api/v1/offers/:id/claim`, `/api/v1/me/...`, `/api/v1/stores/:id/follow` | Customers | Claims, my claims, follows |
 | `/api/v1/admin/...` | Admins | `@Roles(UserRole.ADMIN)` |
 | `/api/v1/business/stores/:storeId/...` | Store owners and staff | `StoreAccessGuard`: members of that store only; `@StoreRoles(OWNER)` for owner-only routes; `@CurrentStore()` gives the membership |
+
+## Background jobs
+
+`ClaimsExpiryService` runs every minute (`@nestjs/schedule`): it expires reservations that weren't picked up (gives the piece back and adds a no-show strike; every 3rd strike blocks claiming for 7 days) and ends offers whose time is up. It doesn't run when `NODE_ENV=test`; the tests call `run()` directly.
 
 ## Uploads
 
@@ -104,7 +109,7 @@ src/
     dto/                   # pagination
     filters/               # error format (incl. database conflicts → 409)
     validation/            # @IsLibyanPhone(), boolean query params
-    utils/                 # phone normalization, temporary passwords, prices, claim codes
+    utils/                 # phone, temporary passwords, prices, claim codes, distances
   modules/                 # one folder per feature
     auth/                  # login, tokens, guards
     admin/                 # dashboard stats
@@ -112,7 +117,7 @@ src/
     stores/                # stores, branches, staff, store access guard, store stats
     products/              # a store's saved products and photos
     offers/                # posting and managing offers, admin moderation
-    claims/                # looking up and redeeming claims at the counter
+    claims/                # claiming, my claims, redeeming at the counter, expiry job
     users/                 # admin user management
     health/
   generated/prisma/        # generated Prisma client (not committed)
@@ -120,4 +125,4 @@ scripts/                   # one-off scripts (create admin)
 test/                      # e2e tests
 ```
 
-Each feature lives in `src/modules/<feature>/` with its own module, controller, service and DTOs. Admin endpoints live in `admin-*.controller.ts` files, store endpoints in `business-*.controller.ts` files.
+Each feature lives in `src/modules/<feature>/` with its own module, controller, service and DTOs. Controllers are split by audience: `public-*` (browsing), `customer-*`, `business-*` (stores) and `admin-*`.

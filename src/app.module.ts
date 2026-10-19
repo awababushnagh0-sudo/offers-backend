@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { type Env, validateEnv } from './config/env.validation.js';
 import { DatabaseModule } from './database/database.module.js';
@@ -30,6 +31,7 @@ import { UsersModule } from './modules/users/users.module.js';
         skipIf: () => config.get('NODE_ENV', { infer: true }) === 'test',
       }),
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     StorageModule,
     AuthModule,
