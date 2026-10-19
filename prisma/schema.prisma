@@ -1,0 +1,343 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Prices are in Libyan dinars with 3 decimals (1 LD = 1000 dirhams).
+
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  CUSTOMER // uses the customer app
+  MERCHANT // store owner or staff, uses the business app
+  ADMIN // our team, uses the admin dashboard
+}
+
+enum AuthProvider {
+  GOOGLE
+  APPLE
+}
+
+enum StoreMemberRole {
+  OWNER // manages the store, offers and staff
+  STAFF // redeems claims at the counter
+}
+
+enum OfferType {
+  LIMITED // has a quantity; claiming reserves one for a time window
+  UNLIMITED // no quantity; customers just get a code
+}
+
+enum OfferStatus {
+  ACTIVE // live (or scheduled, if startsAt is in the future)
+  PAUSED // hidden by the store, can be resumed
+  ENDED // finished or sold out
+  REMOVED // taken down by an admin
+}
+
+enum ClaimStatus {
+  RESERVED // waiting for the customer to show up
+  REDEEMED // scanned at the store
+  EXPIRED // window passed without redeeming (counts as a no-show)
+  CANCELLED // cancelled by the customer
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+// ─── Users & auth ───────────────────────────────────────────────────────────
+
+model User {
+  id                 String    @id @default(uuid(7)) @db.Uuid
+  role               UserRole  @default(CUSTOMER)
+  name               String?
+  // Login email for admins; filled from Google/Apple for customers.
+  email              String?   @unique
+  // Login phone for merchants (store owners and staff).
+  phone              String?   @unique
+  // Optional, unverified phone a customer gives on their first claim.
+  contactPhone       String?   @map("contact_phone")
+  // Only merchants and admins have passwords. Customers use Google/Apple.
+  passwordHash       String?   @map("password_hash")
+  mustChangePassword Boolean   @default(false) @map("must_change_password")
+  avatarUrl          String?   @map("avatar_url")
+  isActive           Boolean   @default(true) @map("is_active")
+  noShowCount        Int       @default(0) @map("no_show_count")
+  claimBannedUntil   DateTime? @map("claim_banned_until")
+  lastLoginAt        DateTime? @map("last_login_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  identities     AuthIdentity[]
+  refreshTokens  RefreshToken[]
+  memberships    StoreMember[]
+  claims         Claim[]        @relation("ClaimCustomer")
+  redeemedClaims Claim[]        @relation("ClaimRedeemer")
+  follows        Follow[]
+  deviceTokens   DeviceToken[]
+  createdStores  Store[]        @relation("StoreCreator")
+  createdOffers  Offer[]        @relation("OfferCreator")
+
+  @@map("users")
+}
+
+model AuthIdentity {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  userId         String       @map("user_id") @db.Uuid
+  provider       AuthProvider
+  // The "sub" claim from the Google/Apple ID token.
+  providerUserId String       @map("provider_user_id")
+  email          String?
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("auth_identities")
+}
+
+model RefreshToken {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  // SHA-256 of the token. The raw token is only ever sent to the client.
+  tokenHash    String    @unique @map("token_hash")
+  expiresAt    DateTime  @map("expires_at")
+  revokedAt    DateTime? @map("revoked_at")
+  // Set when this token is rotated, to detect reuse of old tokens.
+  replacedById String?   @map("replaced_by_id") @db.Uuid
+  userAgent    String?   @map("user_agent")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model DeviceToken {
+  id        String         @id @default(uuid(7)) @db.Uuid
+  userId    String         @map("user_id") @db.Uuid
+  token     String         @unique
+  platform  DevicePlatform
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+// ─── Stores ─────────────────────────────────────────────────────────────────
+
+model Category {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  slug      String   @unique
+  nameAr    String   @map("name_ar")
+  nameEn    String   @map("name_en")
+  iconUrl   String?  @map("icon_url")
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  stores Store[]
+
+  @@map("categories")
+}
+
+model Store {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  categoryId   String   @map("category_id") @db.Uuid
+  name         String
+  description  String?
+  logoUrl      String?  @map("logo_url")
+  coverUrl     String?  @map("cover_url")
+  phone        String?
+  facebookUrl  String?  @map("facebook_url")
+  instagramUrl String?  @map("instagram_url")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdById  String?  @map("created_by_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  category  Category      @relation(fields: [categoryId], references: [id])
+  createdBy User?         @relation("StoreCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  branches  Branch[]
+  members   StoreMember[]
+  products  Product[]
+  offers    Offer[]
+  followers Follow[]
+
+  @@index([categoryId])
+  @@map("stores")
+}
+
+model Branch {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  storeId      String   @map("store_id") @db.Uuid
+  name         String
+  city         String
+  area         String?
+  address      String?
+  latitude     Float
+  longitude    Float
+  phone        String?
+  // e.g. { "sat": [{ "open": "08:00", "close": "23:00" }], ... }
+  openingHours Json?    @map("opening_hours")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  store          Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  staff          StoreMember[]
+  offers         OfferBranch[]
+  redeemedClaims Claim[]
+
+  @@index([storeId])
+  @@index([city])
+  @@index([latitude, longitude])
+  @@map("branches")
+}
+
+model StoreMember {
+  id        String          @id @default(uuid(7)) @db.Uuid
+  storeId   String          @map("store_id") @db.Uuid
+  userId    String          @map("user_id") @db.Uuid
+  role      StoreMemberRole
+  // Staff can be limited to one branch. Null means all branches.
+  branchId  String?         @map("branch_id") @db.Uuid
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  store  Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch Branch? @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  @@unique([storeId, userId])
+  @@index([userId])
+  @@map("store_members")
+}
+
+// ─── Products & offers ──────────────────────────────────────────────────────
+
+// A store's saved item. Every offer is made from a product, so stores can
+// repost an old offer without taking a new photo.
+model Product {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  storeId      String   @map("store_id") @db.Uuid
+  title        String
+  description  String?
+  // Relative paths under the uploads folder, served by Caddy.
+  imagePath    String?  @map("image_path")
+  thumbPath    String?  @map("thumb_path")
+  regularPrice Decimal  @map("regular_price") @db.Decimal(10, 3)
+  isArchived   Boolean  @default(false) @map("is_archived")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  store  Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  offers Offer[]
+
+  @@index([storeId])
+  @@map("products")
+}
+
+model Offer {
+  id                 String      @id @default(uuid(7)) @db.Uuid
+  storeId            String      @map("store_id") @db.Uuid
+  productId          String      @map("product_id") @db.Uuid
+  // Copied from the product when posting, can be changed per offer.
+  title              String
+  description        String?
+  originalPrice      Decimal     @map("original_price") @db.Decimal(10, 3)
+  offerPrice         Decimal     @map("offer_price") @db.Decimal(10, 3)
+  type               OfferType
+  // Only for LIMITED offers.
+  totalQuantity      Int?        @map("total_quantity")
+  remainingQuantity  Int?        @map("remaining_quantity")
+  maxPerUser         Int         @default(1) @map("max_per_user")
+  // How long a claim stays reserved before it expires.
+  claimWindowMinutes Int         @default(60) @map("claim_window_minutes")
+  startsAt           DateTime    @default(now()) @map("starts_at")
+  endsAt             DateTime    @map("ends_at")
+  status             OfferStatus @default(ACTIVE)
+  viewCount          Int         @default(0) @map("view_count")
+  createdById        String?     @map("created_by_id") @db.Uuid
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  store     Store         @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  product   Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdBy User?         @relation("OfferCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  branches  OfferBranch[]
+  claims    Claim[]
+
+  @@index([storeId])
+  @@index([productId])
+  @@index([status, endsAt])
+  @@map("offers")
+}
+
+// Which branches an offer is valid at.
+model OfferBranch {
+  offerId  String @map("offer_id") @db.Uuid
+  branchId String @map("branch_id") @db.Uuid
+
+  offer  Offer  @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  branch Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  @@id([offerId, branchId])
+  @@index([branchId])
+  @@map("offer_branches")
+}
+
+// ─── Claims & follows ───────────────────────────────────────────────────────
+
+model Claim {
+  id               String      @id @default(uuid(7)) @db.Uuid
+  offerId          String      @map("offer_id") @db.Uuid
+  userId           String      @map("user_id") @db.Uuid
+  // Random, unguessable code shown as the QR code.
+  code             String      @unique
+  status           ClaimStatus @default(RESERVED)
+  expiresAt        DateTime    @map("expires_at")
+  redeemedAt       DateTime?   @map("redeemed_at")
+  redeemedById     String?     @map("redeemed_by_id") @db.Uuid
+  redeemedBranchId String?     @map("redeemed_branch_id") @db.Uuid
+  cancelledAt      DateTime?   @map("cancelled_at")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  offer          Offer   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user           User    @relation("ClaimCustomer", fields: [userId], references: [id], onDelete: Cascade)
+  redeemedBy     User?   @relation("ClaimRedeemer", fields: [redeemedById], references: [id], onDelete: SetNull)
+  redeemedBranch Branch? @relation(fields: [redeemedBranchId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([offerId, status])
+  @@index([status, expiresAt])
+  @@map("claims")
+}
+
+model Follow {
+  userId    String   @map("user_id") @db.Uuid
+  storeId   String   @map("store_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  store Store @relation(fields: [storeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, storeId])
+  @@index([storeId])
+  @@map("follows")
+}

@@ -13,6 +13,7 @@ export const envSchema = z.object({
   // Leave empty to allow all origins (fine for mobile apps in development).
   CORS_ORIGINS: z.string().default(''),
   SWAGGER_ENABLED: booleanString.default(true),
+  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
 });
 
 export type Env = z.infer<typeof envSchema>;

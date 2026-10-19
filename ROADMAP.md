@@ -10,19 +10,21 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 | Customer app | Flutter (flavor `customer`) | Public: browse offers, claim, show QR at the store |
 | Business app | Flutter (flavor `business`) | Store owners and staff: post offers, scan QR codes |
 | Admin dashboard | Flutter Web | Our team: create stores, moderate, stats |
-| Backend API | NestJS + Postgres/PostGIS | All three apps |
+| Backend API | NestJS + Prisma + Postgres | All three apps |
 | Hosting | Libyan Spider VPS, Docker Compose, Caddy | Paid in LYD |
 
 ## Decisions so far
 
 - **Store accounts are created by admins** (our team onboards stores in person). No self-signup in the MVP.
-- **Customers browse without an account.** To claim, they sign in with Google or Apple and enter a phone number (unverified for now).
+- **Customers browse without an account.** To claim, they sign in with Google or Apple. No SMS (too costly); they can add a contact phone (unverified).
 - **No online payment in the MVP.** Customers pay cash in store.
 - **Two kinds of offers:**
   - *Limited*: has a quantity. Claiming reserves one and starts a time window; if it isn't redeemed in time it expires and goes back on sale.
   - *Unlimited*: no quantity. The customer just gets a code to show at the counter.
 - **No-show protection:** limited active claims per user and strikes for expired claims.
 - **Photos are compressed in the app before upload** (1280px full + 400px thumbnail, about 200 KB + 30 KB). The server rejects big files.
+- **Prices are in LD with 3 decimals** (1 LD = 1000 dirhams).
+- **No PostGIS:** with ~100 stores, nearby search uses plain latitude/longitude and a distance formula.
 - **Offers are saved as products,** so a store can repost an old offer in seconds without a new photo.
 
 ---
@@ -37,13 +39,13 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 - [x] Swagger UI at `/docs` (JSON at `/docs/json`)
 - [x] e2e tests for health and error shape
 
-## Phase 1: Database
+## Phase 1: Database ✅
 
-- [ ] `docker-compose.yml` for local Postgres + PostGIS
-- [ ] Prisma setup + `PrismaModule` / `PrismaService`
-- [ ] Schema: users, auth identities (Google/Apple), refresh tokens, categories, stores, branches (with location), store members (owner/staff), products, offers, offer branches, claims, follows, device tokens
-- [ ] First migration + seed script (categories, a demo store, demo offers)
-- [ ] Add a database check to the health endpoint
+- [x] `docker-compose.yml` for local Postgres 18 (host port 5433)
+- [x] Prisma 7 setup + global `DatabaseModule` / `PrismaService`
+- [x] Schema: users, auth identities (Google/Apple), refresh tokens, device tokens, categories, stores, branches (with location), store members (owner/staff), products, offers, offer branches, claims, follows
+- [x] First migration + seed script (categories, a demo store with 2 branches and 2 offers)
+- [x] Database check in the health endpoint
 
 ## Phase 2: Auth
 
@@ -72,7 +74,7 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 
 ## Phase 5: Customer API
 
-- [ ] Browse offers: nearby (PostGIS), by category, ending soon, search
+- [ ] Browse offers: nearby (distance from latitude/longitude), by category, ending soon, search
 - [ ] Offer details and store page
 - [ ] Claim an offer (atomic quantity update, active claim limit, strikes)
 - [ ] My claims (active and history), cancel a claim
@@ -98,7 +100,7 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 
 ## Phase 9: Production
 
-- [ ] Dockerfile + `docker-compose.prod.yml` (API, Postgres, Caddy)
+- [ ] Dockerfile + `docker-compose.prod.yml` (API, Postgres, Caddy), run `prisma migrate deploy` on release
 - [ ] Libyan Spider VPS: firewall, SSH keys only, automatic security updates, Docker
 - [ ] Domain + automatic HTTPS (Caddy)
 - [ ] GitHub Actions: push to `main` deploys
@@ -113,7 +115,6 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 
 ## Later
 
-- SMS OTP phone verification (Libyan SMS gateway)
 - Surprise bags (end-of-day leftovers)
 - Online payment (Libyan gateways)
 - Web dashboard for store chains
