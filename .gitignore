@@ -28,3 +28,6 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+
+# TypeScript build cache
+*.tsbuildinfo
