@@ -19,6 +19,28 @@ npm run start:dev
 - Health: http://localhost:3000/api/v1/health (checks the database too)
 - Swagger: http://localhost:3000/docs
 
+## Auth
+
+Every route needs a logged-in user unless it's marked `@Public()`. Use `@Roles(UserRole.ADMIN)` to limit a route to certain roles, and `@CurrentUser()` to get the user.
+
+| Who | How they log in |
+|---|---|
+| Customers | `POST /auth/google` or `/auth/apple` with the ID token from the device |
+| Merchants | `POST /auth/login` with phone + password (accounts created by admins) |
+| Admins | `POST /auth/login` with email + password |
+
+Logins return a short-lived `accessToken` (send as `Authorization: Bearer ...`) and a `refreshToken`. Call `POST /auth/refresh` to get a new pair; each refresh token works once.
+
+**Trying it in Swagger:** call `/auth/login` (or `/auth/dev/customer` for a customer, which needs `DEV_AUTH_ENABLED=true`), copy the `accessToken`, click **Authorize** at the top and paste it.
+
+Dev logins created by the seed (only when `DEV_AUTH_ENABLED=true`, never in production):
+
+| Role | Login | Password |
+|---|---|---|
+| Admin | `admin@offers.local` | `Admin12345!` |
+| Store owner (demo store) | `0910000001` | `Merchant123!` |
+| Store staff (Hay Al Andalus branch) | `0920000002` | `Staff123!` |
+
 ## Scripts
 
 | Command | What it does |
@@ -59,8 +81,13 @@ src/
   config/                  # env schema + validation (zod)
   setup/                   # global app setup (prefix, versioning, pipes, security) and Swagger
   database/                # PrismaService, available everywhere
-  common/                  # shared building blocks (filters, guards, decorators, ...)
+  common/                  # shared building blocks
+    auth/                  # AuthUser type
+    decorators/            # @Public(), @Roles(), @CurrentUser()
+    filters/               # error format
+    utils/                 # helpers (Libyan phone normalization)
   modules/                 # one folder per feature
+    auth/                  # login, tokens, guards
     health/
   generated/prisma/        # generated Prisma client (not committed)
 test/                      # e2e tests

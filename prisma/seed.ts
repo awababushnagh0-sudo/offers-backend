@@ -1,6 +1,12 @@
 import 'dotenv/config';
+import { hash } from '@node-rs/argon2';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { OfferType, PrismaClient } from '../src/generated/prisma/client.js';
+import {
+  OfferType,
+  PrismaClient,
+  StoreMemberRole,
+  UserRole,
+} from '../src/generated/prisma/client.js';
 
 // Safe to run many times: everything is upserted by a fixed id or slug.
 
@@ -23,6 +29,33 @@ const DEMO = {
   caramelOfferId: '01990000-0000-7000-8000-000000000031',
   baklavaOfferId: '01990000-0000-7000-8000-000000000032',
 };
+
+// Development logins. Only created when DEV_AUTH_ENABLED=true.
+const DEV_USERS = [
+  {
+    role: UserRole.ADMIN,
+    name: 'Dev Admin',
+    email: 'admin@offers.local',
+    password: 'Admin12345!',
+  },
+  {
+    role: UserRole.MERCHANT,
+    name: 'Demo Owner',
+    phone: '+218910000001',
+    password: 'Merchant123!',
+    membership: { role: StoreMemberRole.OWNER, branchId: null },
+  },
+  {
+    role: UserRole.MERCHANT,
+    name: 'Demo Staff',
+    phone: '+218920000002',
+    password: 'Staff123!',
+    membership: {
+      role: StoreMemberRole.STAFF,
+      branchId: DEMO.branchAndalusId,
+    },
+  },
+];
 
 const hoursFromNow = (hours: number) =>
   new Date(Date.now() + hours * 60 * 60 * 1000);
@@ -124,6 +157,36 @@ async function main() {
         },
       },
     });
+  }
+
+  // Only with an explicit opt-in, so a misconfigured server never gets
+  // accounts with known passwords.
+  const devAuthEnabled =
+    process.env['DEV_AUTH_ENABLED'] === 'true' &&
+    process.env['NODE_ENV'] !== 'production';
+  if (devAuthEnabled) {
+    for (const { password, membership, ...user } of DEV_USERS) {
+      const where = user.email ? { email: user.email } : { phone: user.phone };
+      const data = { ...user, passwordHash: await hash(password) };
+      const saved = await prisma.user.upsert({
+        where,
+        update: data,
+        create: data,
+      });
+      if (membership) {
+        await prisma.storeMember.upsert({
+          where: {
+            storeId_userId: { storeId: DEMO.storeId, userId: saved.id },
+          },
+          update: membership,
+          create: { storeId: DEMO.storeId, userId: saved.id, ...membership },
+        });
+      }
+    }
+    console.log(
+      'Dev logins: admin@offers.local / Admin12345!, ' +
+        '0910000001 / Merchant123! (owner), 0920000002 / Staff123! (staff)',
+    );
   }
 
   console.log(

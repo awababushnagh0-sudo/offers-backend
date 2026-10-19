@@ -47,18 +47,23 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 - [x] First migration + seed script (categories, a demo store with 2 branches and 2 offers)
 - [x] Database check in the health endpoint
 
-## Phase 2: Auth
+## Phase 2: Auth ✅
 
-- [ ] Customer sign-in: verify Google / Apple ID tokens, create or find the user
-- [ ] Store staff and admin login: phone or email + password (argon2)
-- [ ] JWT access token (short) + refresh token (long, hashed, rotated) + logout
-- [ ] Guards: `JwtAuthGuard`, `RolesGuard` (customer / merchant / admin), store membership check
-- [ ] Rate limiting on auth endpoints (`@nestjs/throttler`)
+- [x] Customer sign-in: verify Google / Apple ID tokens (jose + public keys), create the user or link by verified email
+- [x] Merchant (phone) and admin (email) login with a password (argon2), Libyan phone normalization
+- [x] JWT access token (15 min) + refresh token (30 days, hashed, rotated, reuse detection) + logout
+- [x] Change password (clears `mustChangePassword`, logs out other devices)
+- [x] Global guards: every route needs login unless `@Public()`; `@Roles()` for role checks; `@CurrentUser()`
+- [x] Rate limiting: 120/min per IP by default, 5/min on login
+- [x] Dev-only customer login for testing in Swagger, dev users in the seed (both need `DEV_AUTH_ENABLED=true`, refused in production)
+- [x] e2e tests for the auth flow
+- [ ] Store membership check (owner/staff of *this* store): moves to Phase 4, where the store endpoints are
 
 ## Phase 3: Admin API
 
 - [ ] Categories CRUD
-- [ ] Create a store with branches and an owner account (temporary password)
+- [ ] Create a store with branches and an owner account (temporary password, `mustChangePassword`)
+- [ ] Script to create the first admin in production (`npm run admin:create`)
 - [ ] Add or remove staff, reset passwords
 - [ ] Deactivate stores, remove offers
 - [ ] Basic stats (stores, offers, claims, redemptions)
@@ -102,7 +107,7 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 
 - [ ] Dockerfile + `docker-compose.prod.yml` (API, Postgres, Caddy), run `prisma migrate deploy` on release
 - [ ] Libyan Spider VPS: firewall, SSH keys only, automatic security updates, Docker
-- [ ] Domain + automatic HTTPS (Caddy)
+- [ ] Domain + automatic HTTPS (Caddy), `trust proxy` so rate limiting sees real client IPs
 - [ ] GitHub Actions: push to `main` deploys
 - [ ] Nightly backups (`pg_dump` + uploads folder) copied off the server with rclone, **and a tested restore**
 - [ ] Uptime monitoring (UptimeRobot) and logs
@@ -110,6 +115,7 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 ## Phase 10: Launch
 
 - [ ] Apple Developer ($99/yr) and Google Play ($25 once) accounts
+- [ ] Google and Apple sign-in client IDs → `GOOGLE_CLIENT_IDS`, `APPLE_CLIENT_IDS`
 - [ ] Store listings, privacy policy, terms
 - [ ] Pilot with about 30 stores in Tripoli
 

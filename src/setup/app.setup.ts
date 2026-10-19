@@ -29,11 +29,7 @@ export function configureApp(app: INestApplication): void {
     }),
   );
 
-  const origins = config
-    .get('CORS_ORIGINS', { infer: true })
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
+  const origins = config.get('CORS_ORIGINS', { infer: true });
   app.enableCors({ origin: origins.length > 0 ? origins : true });
 
   // Routes look like /api/v1/health

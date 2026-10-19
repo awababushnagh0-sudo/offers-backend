@@ -6,11 +6,13 @@ import {
   MemoryHealthIndicator,
   PrismaHealthIndicator,
 } from '@nestjs/terminus';
+import { Public } from '../../common/decorators/public.decorator.js';
 import { PrismaService } from '../../database/prisma.service.js';
 
 const MAX_HEAP_BYTES = 300 * 1024 * 1024;
 
 @ApiTags('Health')
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(

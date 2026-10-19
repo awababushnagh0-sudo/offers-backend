@@ -6,7 +6,9 @@ export const SWAGGER_PATH = 'docs';
 export function setupSwagger(app: INestApplication): void {
   const config = new DocumentBuilder()
     .setTitle('Offers API')
-    .setDescription('Backend for the customer app, business app and admin dashboard')
+    .setDescription(
+      'Backend for the customer app, business app and admin dashboard',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();
