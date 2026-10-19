@@ -7,6 +7,29 @@ import {
   Logger,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { Prisma } from '../../generated/prisma/client.js';
+
+// Database errors that are the client's fault, not a server bug.
+const PRISMA_ERRORS: Record<
+  string,
+  { statusCode: number; error: string; message: string }
+> = {
+  P2002: {
+    statusCode: HttpStatus.CONFLICT,
+    error: 'Conflict',
+    message: 'A record with these details already exists',
+  },
+  P2003: {
+    statusCode: HttpStatus.BAD_REQUEST,
+    error: 'Bad Request',
+    message: 'A related record does not exist',
+  },
+  P2025: {
+    statusCode: HttpStatus.NOT_FOUND,
+    error: 'Not Found',
+    message: 'Record not found',
+  },
+};
 
 export interface ErrorResponse {
   statusCode: number;
@@ -47,6 +70,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
         message = bodyMessage ?? exception.message;
         error = bodyError ?? exception.name;
       }
+    } else if (
+      exception instanceof Prisma.PrismaClientKnownRequestError &&
+      exception.code in PRISMA_ERRORS
+    ) {
+      ({ statusCode, error, message } = PRISMA_ERRORS[exception.code]);
     } else {
       this.logger.error(
         `Unhandled error on ${request.method} ${request.originalUrl}`,

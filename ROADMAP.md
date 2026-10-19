@@ -59,17 +59,24 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 - [x] e2e tests for the auth flow
 - [ ] Store membership check (owner/staff of *this* store): moves to Phase 4, where the store endpoints are
 
-## Phase 3: Admin API
+## Phase 3: Admin API ✅
 
-- [ ] Categories CRUD
-- [ ] Create a store with branches and an owner account (temporary password, `mustChangePassword`)
-- [ ] Script to create the first admin in production (`npm run admin:create`)
-- [ ] Add or remove staff, reset passwords
-- [ ] Deactivate stores, remove offers
-- [ ] Basic stats (stores, offers, claims, redemptions)
+- [x] Categories: admin create/edit/hide, public `GET /categories`
+- [x] Create a store with branches and an owner account in one transaction (temporary password shown once; existing merchants are linked, not duplicated)
+- [x] Stores: list/search/filter, details, edit, disable; add and edit branches
+- [x] Staff: add owner/staff (staff can be limited to a branch), remove (never the last owner)
+- [x] Users: search (name, email, phone in any format), disable/enable (logs out everywhere), reset password
+- [x] Offers: list across stores, take down (cancels active reservations)
+- [x] Dashboard stats
+- [x] `npm run admin:create` for the first admin in production
+- [x] Database conflicts return 409, missing related records 400
+- [x] e2e tests for the admin API
 
 ## Phase 4: Business API
 
+- [ ] Store membership check: owners/staff can only touch their own store; staff limited to their branch
+- [ ] Merchants with `mustChangePassword` must change it before using the business API
+- [ ] Disabled stores can't post offers
 - [ ] Store profile and branches (view and edit)
 - [ ] Image upload: size and type limits, saved to disk, served by Caddy
 - [ ] Products: create, edit, archive, list

@@ -58,6 +58,7 @@ Dev logins created by the seed (only when `DEV_AUTH_ENABLED=true`, never in prod
 | `npm run db:reset` | Drop everything, re-run migrations and seed |
 | `npm run db:studio` | Browse the data in Prisma Studio |
 | `npm run db:deploy` | Apply migrations in production |
+| `npm run admin:create -- --email you@example.ly --name "Name"` | Create an admin (prints a temporary password once) |
 
 ## Changing the database
 
@@ -84,13 +85,21 @@ src/
   common/                  # shared building blocks
     auth/                  # AuthUser type
     decorators/            # @Public(), @Roles(), @CurrentUser()
-    filters/               # error format
-    utils/                 # helpers (Libyan phone normalization)
+    dto/                   # pagination
+    filters/               # error format (incl. database conflicts → 409)
+    validation/            # @IsLibyanPhone(), boolean query params
+    utils/                 # phone normalization, temporary passwords, prices
   modules/                 # one folder per feature
     auth/                  # login, tokens, guards
+    admin/                 # dashboard stats
+    categories/            # public list + admin management
+    stores/                # stores, branches, staff (admin side for now)
+    users/                 # admin user management
+    offers/                # admin moderation for now
     health/
   generated/prisma/        # generated Prisma client (not committed)
+scripts/                   # one-off scripts (create admin)
 test/                      # e2e tests
 ```
 
-Each feature lives in `src/modules/<feature>/` with its own module, controller, service and DTOs.
+Each feature lives in `src/modules/<feature>/` with its own module, controller, service and DTOs. Admin endpoints live in `admin-*.controller.ts` files under `/api/v1/admin/...` and require the `ADMIN` role.

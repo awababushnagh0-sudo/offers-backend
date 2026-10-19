@@ -28,7 +28,8 @@
     "db:generate": "prisma generate",
     "db:seed": "prisma db seed",
     "db:reset": "prisma migrate reset",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "admin:create": "tsx scripts/create-admin.ts"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",
