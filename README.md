@@ -41,6 +41,21 @@ Dev logins created by the seed (only when `DEV_AUTH_ENABLED=true`, never in prod
 | Store owner (demo store) | `0910000001` | `Merchant123!` |
 | Store staff (Hay Al Andalus branch) | `0920000002` | `Staff123!` |
 
+Users on a temporary password (new merchants, reset passwords, new admins) get `403` with `"error": "PasswordChangeRequired"` everywhere except `GET /auth/me` and `POST /auth/change-password`. Routes that should stay open for them use `@AllowTemporaryPassword()`.
+
+## API areas
+
+| Prefix | Who | Notes |
+|---|---|---|
+| `/api/v1/auth` | Everyone | Login, tokens, profile |
+| `/api/v1/categories` | Public | |
+| `/api/v1/admin/...` | Admins | `@Roles(UserRole.ADMIN)` |
+| `/api/v1/business/stores/:storeId/...` | Store owners and staff | `StoreAccessGuard`: members of that store only; `@StoreRoles(OWNER)` for owner-only routes; `@CurrentStore()` gives the membership |
+
+## Uploads
+
+Photos are uploaded as `multipart/form-data` (max 1 MB, JPEG/PNG/WebP, checked from the file bytes) and saved under `UPLOADS_DIR` with random names. The database stores relative paths; responses return full URLs built from `PUBLIC_UPLOADS_URL`. In development the API serves `/uploads/...` itself (`SERVE_UPLOADS=true`); in production Caddy serves the folder and `SERVE_UPLOADS=false`. The e2e tests upload to a temp folder.
+
 ## Scripts
 
 | Command | What it does |
@@ -82,24 +97,27 @@ src/
   config/                  # env schema + validation (zod)
   setup/                   # global app setup (prefix, versioning, pipes, security) and Swagger
   database/                # PrismaService, available everywhere
+  storage/                 # saving uploaded images, upload decorators
   common/                  # shared building blocks
     auth/                  # AuthUser type
     decorators/            # @Public(), @Roles(), @CurrentUser()
     dto/                   # pagination
     filters/               # error format (incl. database conflicts → 409)
     validation/            # @IsLibyanPhone(), boolean query params
-    utils/                 # phone normalization, temporary passwords, prices
+    utils/                 # phone normalization, temporary passwords, prices, claim codes
   modules/                 # one folder per feature
     auth/                  # login, tokens, guards
     admin/                 # dashboard stats
     categories/            # public list + admin management
-    stores/                # stores, branches, staff (admin side for now)
+    stores/                # stores, branches, staff, store access guard, store stats
+    products/              # a store's saved products and photos
+    offers/                # posting and managing offers, admin moderation
+    claims/                # looking up and redeeming claims at the counter
     users/                 # admin user management
-    offers/                # admin moderation for now
     health/
   generated/prisma/        # generated Prisma client (not committed)
 scripts/                   # one-off scripts (create admin)
 test/                      # e2e tests
 ```
 
-Each feature lives in `src/modules/<feature>/` with its own module, controller, service and DTOs. Admin endpoints live in `admin-*.controller.ts` files under `/api/v1/admin/...` and require the `ADMIN` role.
+Each feature lives in `src/modules/<feature>/` with its own module, controller, service and DTOs. Admin endpoints live in `admin-*.controller.ts` files, store endpoints in `business-*.controller.ts` files.

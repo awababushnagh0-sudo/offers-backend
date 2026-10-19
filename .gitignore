@@ -33,3 +33,6 @@ lerna-debug.log*
 *.tsbuildinfo
 
 /src/generated/prisma
+
+# Uploaded files (local development)
+/uploads

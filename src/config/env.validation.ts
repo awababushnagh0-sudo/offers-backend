@@ -36,6 +36,13 @@ export const envSchema = z
     GOOGLE_CLIENT_IDS: commaList,
     APPLE_CLIENT_IDS: commaList,
 
+    // Where uploaded photos are saved, and the public URL they're served from.
+    UPLOADS_DIR: z.string().default('./uploads'),
+    PUBLIC_UPLOADS_URL: z.url().default('http://localhost:3000/uploads'),
+    // Serve uploads from the API itself (development). In production Caddy
+    // serves the uploads folder directly, so this is turned off.
+    SERVE_UPLOADS: booleanString.default(true),
+
     // Enables POST /auth/dev/customer and the test logins in the seed.
     // Off unless explicitly turned on; refused in production.
     DEV_AUTH_ENABLED: booleanString.default(false),

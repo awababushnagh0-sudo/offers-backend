@@ -4,9 +4,11 @@ import {
   VersioningType,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import { AllExceptionsFilter } from '../common/filters/all-exceptions.filter.js';
 import type { Env } from '../config/env.validation.js';
+import { StorageService } from '../storage/storage.service.js';
 
 export const API_PREFIX = 'api';
 
@@ -26,8 +28,17 @@ export function configureApp(app: INestApplication): void {
           upgradeInsecureRequests: null,
         },
       },
+      // Lets the admin dashboard (another origin) show uploaded photos.
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
+
+  if (config.get('SERVE_UPLOADS', { infer: true })) {
+    (app as NestExpressApplication).useStaticAssets(
+      app.get(StorageService).rootDir,
+      { prefix: '/uploads/', index: false, dotfiles: 'deny', maxAge: '7d' },
+    );
+  }
 
   const origins = config.get('CORS_ORIGINS', { infer: true });
   app.enableCors({ origin: origins.length > 0 ? origins : true });

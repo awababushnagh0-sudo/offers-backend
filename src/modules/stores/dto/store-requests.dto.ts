@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
@@ -161,4 +161,17 @@ export class ListStoresQueryDto extends PaginationQueryDto {
 
   @OptionalBooleanQuery()
   isActive?: boolean;
+}
+
+/** What a store owner can change themselves. Name and category are set by admins. */
+export class UpdateStoreProfileDto extends PickType(UpdateStoreDto, [
+  'description',
+  'phone',
+  'facebookUrl',
+  'instagramUrl',
+] as const) {}
+
+export enum StoreImageKind {
+  LOGO = 'logo',
+  COVER = 'cover',
 }

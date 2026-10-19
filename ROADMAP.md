@@ -57,7 +57,7 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 - [x] Rate limiting: 120/min per IP by default, 5/min on login
 - [x] Dev-only customer login for testing in Swagger, dev users in the seed (both need `DEV_AUTH_ENABLED=true`, refused in production)
 - [x] e2e tests for the auth flow
-- [ ] Store membership check (owner/staff of *this* store): moves to Phase 4, where the store endpoints are
+- [x] Store membership check (owner/staff of *this* store): done in Phase 4 (`StoreAccessGuard`)
 
 ## Phase 3: Admin API ✅
 
@@ -72,23 +72,30 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 - [x] Database conflicts return 409, missing related records 400
 - [x] e2e tests for the admin API
 
-## Phase 4: Business API
+## Phase 4: Business API ✅
 
-- [ ] Store membership check: owners/staff can only touch their own store; staff limited to their branch
-- [ ] Merchants with `mustChangePassword` must change it before using the business API
-- [ ] Disabled stores can't post offers
-- [ ] Store profile and branches (view and edit)
-- [ ] Image upload: size and type limits, saved to disk, served by Caddy
-- [ ] Products: create, edit, archive, list
-- [ ] Offers: create from a product, pause, end, repost
-- [ ] Redeem a claim by scanning its QR code
-- [ ] Stats per offer: views, claims, redemptions
+- [x] Store access guard: merchants only reach stores they belong to (others get 404); `@StoreRoles(OWNER)` for owner-only routes
+- [x] Temporary passwords: merchants and admins must change them before using anything else (`error: "PasswordChangeRequired"`)
+- [x] Store profile (owner edits description/contact; name and category stay with admins), logo and cover upload, branch editing
+- [x] Image upload: max 1 MB, type checked from the file bytes, random file names, served by the API in development
+- [x] Products: create, edit, archive, photo + thumbnail
+- [x] Offers: post from a product (price must be below regular, max 30 days, limited needs quantity), edit, pause, resume, end; derived `state` (LIVE, SCHEDULED, SOLD_OUT, PAUSED, ENDED, REMOVED)
+- [x] Disabled stores can't post or resume offers
+- [x] Claims at the counter: look up a scanned code, redeem once (safe if scanned twice at the same moment), upcoming pickups; staff limited to their branch
+- [x] Store stats: today (Libya time), last 30 days, top offers
+- [x] e2e tests for the business API
+
+Decisions:
+- **Owners** manage the store, products and offers. **Staff** can view offers and claims and redeem at the counter.
+- Pausing or ending an offer stops new claims, but **reservations already made can still be redeemed** (the customer may be on the way). An admin removal cancels them.
+- Claim codes are 8 characters without look-alikes (e.g. `ABCD2345`), so they can be typed if the QR won't scan.
 
 ## Phase 5: Customer API
 
 - [ ] Browse offers: nearby (distance from latitude/longitude), by category, ending soon, search
 - [ ] Offer details and store page
-- [ ] Claim an offer (atomic quantity update, active claim limit, strikes)
+- [ ] Claim an offer (atomic quantity update, active claim limit, strikes, `maxPerUser`), generate the claim code
+- [ ] Count offer views
 - [ ] My claims (active and history), cancel a claim
 - [ ] Follow and unfollow stores
 - [ ] Cron jobs: expire claims (return quantity, add strike), end finished offers

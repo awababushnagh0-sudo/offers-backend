@@ -15,6 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { AuthUser } from '../../common/auth/auth-user.js';
+import { AllowTemporaryPassword } from '../../common/decorators/allow-temporary-password.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { Public } from '../../common/decorators/public.decorator.js';
 import { AuthProvider } from '../../generated/prisma/enums.js';
@@ -109,6 +110,7 @@ export class AuthController {
 
   @Get('me')
   @ApiBearerAuth()
+  @AllowTemporaryPassword()
   @ApiOperation({ summary: 'The logged-in user and the stores they work at' })
   me(@CurrentUser() user: AuthUser): Promise<MeDto> {
     return this.auth.me(user.id);
@@ -117,6 +119,7 @@ export class AuthController {
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
+  @AllowTemporaryPassword()
   @Throttle({ default: { limit: 5, ttl: MINUTE_MS } })
   @ApiOperation({
     summary: 'Change password (logs out other devices, returns new tokens)',

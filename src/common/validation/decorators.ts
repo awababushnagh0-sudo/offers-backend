@@ -29,3 +29,19 @@ export function OptionalBooleanQuery() {
     IsBoolean(),
   );
 }
+
+/**
+ * A price in LD with up to 3 decimals, e.g. "8" or "8.500". Numbers are
+ * accepted and converted to strings, so no float rounding reaches the database.
+ */
+export function IsPrice() {
+  return applyDecorators(
+    Transform(({ value }: { value: unknown }) =>
+      typeof value === 'number' ? String(value) : value,
+    ),
+    Matches(/^(?!0+(\.0+)?$)\d{1,7}(\.\d{1,3})?$/, {
+      message:
+        '$property must be a price above 0 with up to 3 decimals, e.g. "8.500"',
+    }),
+  );
+}

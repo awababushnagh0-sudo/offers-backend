@@ -6,16 +6,18 @@ import {
 } from '@nestjs/common';
 import { pageArgs, pageMeta } from '../../common/dto/pagination.dto.js';
 import { PrismaService } from '../../database/prisma.service.js';
+import { StorageService } from '../../storage/storage.service.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { StoreMemberRole } from '../../generated/prisma/enums.js';
 import { toCategoryDto } from '../categories/categories.service.js';
-import type {
-  AddMemberDto,
-  CreateBranchDto,
-  CreateStoreDto,
-  ListStoresQueryDto,
-  UpdateBranchDto,
-  UpdateStoreDto,
+import {
+  type AddMemberDto,
+  type CreateBranchDto,
+  type CreateStoreDto,
+  type ListStoresQueryDto,
+  StoreImageKind,
+  type UpdateBranchDto,
+  type UpdateStoreDto,
 } from './dto/store-requests.dto.js';
 import type {
   AddMemberResponseDto,
@@ -46,6 +48,7 @@ export class StoresService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly merchants: MerchantAccountsService,
+    private readonly storage: StorageService,
   ) {}
 
   async list(query: ListStoresQueryDto): Promise<StoreListDto> {
@@ -69,7 +72,7 @@ export class StoresService {
       items: stores.map((store) => ({
         id: store.id,
         name: store.name,
-        logoUrl: store.logoUrl,
+        logoUrl: this.storage.url(store.logoUrl),
         isActive: store.isActive,
         category: toCategoryDto(store.category),
         branchCount: store._count.branches,
@@ -85,7 +88,7 @@ export class StoresService {
       include: storeDetailInclude,
     });
     if (!store) throw new NotFoundException('Store not found');
-    return toStoreDetailDto(store);
+    return this.toStoreDetailDto(store);
   }
 
   /** Creates the store, its branches and the owner account in one go. */
@@ -116,7 +119,7 @@ export class StoresService {
       (member) => member.role === StoreMemberRole.OWNER,
     )!;
     return {
-      store: toStoreDetailDto(store),
+      store: this.toStoreDetailDto(store),
       owner: {
         userId: ownerMember.userId,
         phone: owner.phone,
@@ -133,7 +136,27 @@ export class StoresService {
       data: dto,
       include: storeDetailInclude,
     });
-    return toStoreDetailDto(store);
+    return this.toStoreDetailDto(store);
+  }
+
+  /** Replaces the store logo or cover photo and deletes the old file. */
+  async setImage(
+    storeId: string,
+    kind: StoreImageKind,
+    file: Express.Multer.File,
+  ): Promise<StoreDetailDto> {
+    const store = await this.prisma.store.findUniqueOrThrow({
+      where: { id: storeId },
+    });
+    const path = await this.storage.saveImage(`stores/${storeId}`, file);
+    const field = kind === StoreImageKind.LOGO ? 'logoUrl' : 'coverUrl';
+    const updated = await this.prisma.store.update({
+      where: { id: storeId },
+      data: { [field]: path },
+      include: storeDetailInclude,
+    });
+    await this.storage.delete(store[field]);
+    return this.toStoreDetailDto(updated);
   }
 
   async addBranch(storeId: string, dto: CreateBranchDto): Promise<BranchDto> {
@@ -227,6 +250,24 @@ export class StoresService {
     await this.prisma.storeMember.delete({ where: { id: member.id } });
   }
 
+  toStoreDetailDto(store: StoreWithDetails): StoreDetailDto {
+    return {
+      id: store.id,
+      name: store.name,
+      description: store.description,
+      logoUrl: this.storage.url(store.logoUrl),
+      coverUrl: this.storage.url(store.coverUrl),
+      phone: store.phone,
+      facebookUrl: store.facebookUrl,
+      instagramUrl: store.instagramUrl,
+      isActive: store.isActive,
+      createdAt: store.createdAt,
+      category: toCategoryDto(store.category),
+      branches: store.branches.map(toBranchDto),
+      members: store.members.map(toMemberDto),
+    };
+  }
+
   private async assertStoreExists(id: string): Promise<void> {
     const count = await this.prisma.store.count({ where: { id } });
     if (count === 0) throw new NotFoundException('Store not found');
@@ -279,23 +320,5 @@ function toMemberDto(member: MemberWithUser): StoreMemberDto {
     branchId: member.branchId,
     isActive: member.user.isActive,
     mustChangePassword: member.user.mustChangePassword,
-  };
-}
-
-function toStoreDetailDto(store: StoreWithDetails): StoreDetailDto {
-  return {
-    id: store.id,
-    name: store.name,
-    description: store.description,
-    logoUrl: store.logoUrl,
-    coverUrl: store.coverUrl,
-    phone: store.phone,
-    facebookUrl: store.facebookUrl,
-    instagramUrl: store.instagramUrl,
-    isActive: store.isActive,
-    createdAt: store.createdAt,
-    category: toCategoryDto(store.category),
-    branches: store.branches.map(toBranchDto),
-    members: store.members.map(toMemberDto),
   };
 }

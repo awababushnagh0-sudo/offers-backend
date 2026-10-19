@@ -1,6 +1,7 @@
 import {
   type CanActivate,
   type ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -8,6 +9,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import type { AccessTokenPayload } from '../../../common/auth/auth-user.js';
+import { ALLOW_TEMPORARY_PASSWORD_KEY } from '../../../common/decorators/allow-temporary-password.decorator.js';
 import { IS_PUBLIC_KEY } from '../../../common/decorators/public.decorator.js';
 
 /** Registered globally: every route needs a valid access token unless @Public(). */
@@ -33,11 +35,30 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       const payload = await this.jwt.verifyAsync<AccessTokenPayload>(token);
-      request.user = { id: payload.sub, role: payload.role };
+      request.user = {
+        id: payload.sub,
+        role: payload.role,
+        mustChangePassword: payload.mcp === true,
+      };
     } catch {
       // A bad token on a public route is ignored, not rejected.
       if (!isPublic) {
         throw new UnauthorizedException('Invalid or expired access token');
+      }
+      return true;
+    }
+
+    if (request.user.mustChangePassword && !isPublic) {
+      const allowed = this.reflector.getAllAndOverride<boolean>(
+        ALLOW_TEMPORARY_PASSWORD_KEY,
+        [context.getHandler(), context.getClass()],
+      );
+      if (!allowed) {
+        throw new ForbiddenException({
+          statusCode: 403,
+          error: 'PasswordChangeRequired',
+          message: 'Change your temporary password first',
+        });
       }
     }
     return true;

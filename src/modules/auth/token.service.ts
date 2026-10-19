@@ -41,7 +41,7 @@ export class TokenService {
   }
 
   async issue(
-    user: Pick<User, 'id' | 'role'>,
+    user: Pick<User, 'id' | 'role' | 'mustChangePassword'>,
     userAgent?: string,
   ): Promise<IssuedTokens> {
     const refreshToken = generateRefreshToken();
@@ -132,8 +132,11 @@ export class TokenService {
     });
   }
 
-  private signAccessToken(user: Pick<User, 'id' | 'role'>): Promise<string> {
+  private signAccessToken(
+    user: Pick<User, 'id' | 'role' | 'mustChangePassword'>,
+  ): Promise<string> {
     const payload: AccessTokenPayload = { sub: user.id, role: user.role };
+    if (user.mustChangePassword) payload.mcp = true;
     return this.jwt.signAsync(payload, { expiresIn: this.accessTtlSeconds });
   }
 }
