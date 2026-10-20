@@ -11,7 +11,12 @@ import {
   UploadedFiles,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { StoreMemberRole } from '../../generated/prisma/enums.js';
 import {
   ImageWithThumbUpload,
@@ -35,6 +40,7 @@ import { ProductsService } from './products.service.js';
 @ApiTags('Business: Products')
 @ApiBearerAuth()
 @UseGuards(StoreAccessGuard)
+@ApiParam({ name: 'storeId', type: String, format: 'uuid' })
 @StoreRoles(StoreMemberRole.OWNER)
 @Controller('business/stores/:storeId/products')
 export class BusinessProductsController {
@@ -63,7 +69,7 @@ export class BusinessProductsController {
 
   @Get(':productId')
   @ApiOperation({ summary: 'One product' })
-  get(
+  getProduct(
     @CurrentStore() store: StoreAccess,
     @Param('productId', ParseUUIDPipe) productId: string,
   ): Promise<ProductDto> {

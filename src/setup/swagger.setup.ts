@@ -13,7 +13,12 @@ export function setupSwagger(app: INestApplication): void {
     .addBearerAuth()
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, config, {
+    // Operation names become method names in the generated app clients
+    // (e.g. `login` instead of `AuthController_login_v1`). They only need
+    // to be unique within one controller.
+    operationIdFactory: (_controllerKey, methodKey) => methodKey,
+  });
   SwaggerModule.setup(SWAGGER_PATH, app, document, {
     jsonDocumentUrl: `${SWAGGER_PATH}/json`,
     swaggerOptions: { persistAuthorization: true },

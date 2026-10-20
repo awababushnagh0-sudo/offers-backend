@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Headers,
   HttpCode,
   HttpStatus,
   Patch,
@@ -19,6 +18,7 @@ import type { AuthUser } from '../../common/auth/auth-user.js';
 import { AllowTemporaryPassword } from '../../common/decorators/allow-temporary-password.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { Public } from '../../common/decorators/public.decorator.js';
+import { UserAgent } from '../../common/decorators/user-agent.decorator.js';
 import { AuthProvider } from '../../generated/prisma/enums.js';
 import { AuthService } from './auth.service.js';
 import {
@@ -50,7 +50,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Customer sign-in with a Google ID token' })
   async google(
     @Body() dto: GoogleSignInDto,
-    @Headers('user-agent') userAgent?: string,
+    @UserAgent() userAgent?: string,
   ): Promise<AuthResponseDto> {
     const profile = await this.socialTokens.verifyGoogle(dto.idToken);
     return this.auth.signInWithSocial(AuthProvider.GOOGLE, profile, userAgent);
@@ -63,7 +63,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Customer sign-in with an Apple identity token' })
   async apple(
     @Body() dto: AppleSignInDto,
-    @Headers('user-agent') userAgent?: string,
+    @UserAgent() userAgent?: string,
   ): Promise<AuthResponseDto> {
     const profile = await this.socialTokens.verifyApple(dto.idToken);
     return this.auth.signInWithSocial(
@@ -82,7 +82,7 @@ export class AuthController {
   })
   login(
     @Body() dto: LoginDto,
-    @Headers('user-agent') userAgent?: string,
+    @UserAgent() userAgent?: string,
   ): Promise<AuthResponseDto> {
     return this.auth.loginWithPassword(dto.identifier, dto.password, userAgent);
   }
@@ -96,7 +96,7 @@ export class AuthController {
   })
   refresh(
     @Body() dto: RefreshTokenDto,
-    @Headers('user-agent') userAgent?: string,
+    @UserAgent() userAgent?: string,
   ): Promise<AuthResponseDto> {
     return this.auth.refresh(dto.refreshToken, userAgent);
   }
@@ -139,7 +139,7 @@ export class AuthController {
   changePassword(
     @CurrentUser() user: AuthUser,
     @Body() dto: ChangePasswordDto,
-    @Headers('user-agent') userAgent?: string,
+    @UserAgent() userAgent?: string,
   ): Promise<AuthResponseDto> {
     return this.auth.changePassword(
       user.id,
@@ -158,7 +158,7 @@ export class AuthController {
   })
   devCustomer(
     @Body() dto: DevCustomerLoginDto,
-    @Headers('user-agent') userAgent?: string,
+    @UserAgent() userAgent?: string,
   ): Promise<AuthResponseDto> {
     return this.auth.devCustomerLogin(dto.name, userAgent);
   }

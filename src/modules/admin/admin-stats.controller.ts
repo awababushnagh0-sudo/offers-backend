@@ -14,7 +14,7 @@ export class AdminStatsController {
 
   @Get()
   @ApiOperation({ summary: 'Headline numbers for the dashboard' })
-  get(): Promise<AdminStatsDto> {
+  getStats(): Promise<AdminStatsDto> {
     return this.stats.get();
   }
 }

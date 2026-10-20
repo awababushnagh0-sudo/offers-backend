@@ -67,7 +67,7 @@ export class AdminStoresController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Store details with branches and staff' })
-  get(@Param('id', ParseUUIDPipe) id: string): Promise<StoreDetailDto> {
+  getStore(@Param('id', ParseUUIDPipe) id: string): Promise<StoreDetailDto> {
     return this.stores.get(id);
   }
 

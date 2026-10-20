@@ -7,6 +7,7 @@ import { type Env, validateEnv } from './config/env.validation.js';
 import { DatabaseModule } from './database/database.module.js';
 import { StorageModule } from './storage/storage.module.js';
 import { AdminModule } from './modules/admin/admin.module.js';
+import { AppConfigModule } from './modules/app-config/app-config.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
 import { ClaimsModule } from './modules/claims/claims.module.js';
@@ -36,6 +37,7 @@ import { UsersModule } from './modules/users/users.module.js';
     StorageModule,
     AuthModule,
     HealthModule,
+    AppConfigModule,
     CategoriesModule,
     StoresModule,
     UsersModule,

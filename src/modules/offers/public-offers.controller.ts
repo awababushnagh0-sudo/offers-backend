@@ -33,7 +33,7 @@ export class PublicOffersController {
     description:
       'Works without login. With a customer token, `myActiveClaimId` shows their reservation.',
   })
-  get(
+  getOffer(
     @Param('offerId', ParseUUIDPipe) offerId: string,
     @Query() query: LocationQueryDto,
     @CurrentUser() user: AuthUser | undefined,

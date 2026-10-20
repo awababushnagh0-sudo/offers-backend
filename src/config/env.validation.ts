@@ -4,6 +4,8 @@ const booleanString = z
   .enum(['true', 'false'])
   .transform((value) => value === 'true');
 
+const semver = z.string().regex(/^\d+\.\d+\.\d+$/, 'must look like 1.2.0');
+
 const commaList = z
   .string()
   .default('')
@@ -42,6 +44,11 @@ export const envSchema = z
     // Serve uploads from the API itself (development). In production Caddy
     // serves the uploads folder directly, so this is turned off.
     SERVE_UPLOADS: booleanString.default(true),
+
+    // Apps older than these versions are told to update (semver, e.g. 1.2.0).
+    BUSINESS_APP_MIN_VERSION: semver.default('1.0.0'),
+    CUSTOMER_APP_MIN_VERSION: semver.default('1.0.0'),
+    ADMIN_APP_MIN_VERSION: semver.default('1.0.0'),
 
     // Enables POST /auth/dev/customer and the test logins in the seed.
     // Off unless explicitly turned on; refused in production.

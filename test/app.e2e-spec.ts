@@ -26,6 +26,16 @@ describe('App (e2e)', () => {
       });
   });
 
+  it('GET /api/v1/app-config returns minimum app versions', () => {
+    return request(app.getHttpServer())
+      .get('/api/v1/app-config')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.business.minVersion).toMatch(/^\d+\.\d+\.\d+$/);
+        expect(res.body.customer.minVersion).toMatch(/^\d+\.\d+\.\d+$/);
+      });
+  });
+
   it('unknown routes return the standard error shape', () => {
     return request(app.getHttpServer())
       .get('/api/v1/does-not-exist')

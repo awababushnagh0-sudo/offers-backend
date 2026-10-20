@@ -36,7 +36,7 @@ export class PublicStoresController {
     summary: 'Store page with branches and live offers',
     description: 'With a customer token, `isFollowing` is filled in.',
   })
-  get(
+  getStore(
     @Param('storeId', ParseUUIDPipe) storeId: string,
     @Query() query: LocationQueryDto,
     @CurrentUser() user: AuthUser | undefined,

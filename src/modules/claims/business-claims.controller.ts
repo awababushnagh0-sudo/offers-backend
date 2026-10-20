@@ -9,7 +9,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   type StoreAccess,
   CurrentStore,
@@ -27,6 +32,7 @@ import {
 @ApiTags('Business: Claims')
 @ApiBearerAuth()
 @UseGuards(StoreAccessGuard)
+@ApiParam({ name: 'storeId', type: String, format: 'uuid' })
 @Controller('business/stores/:storeId/claims')
 export class BusinessClaimsController {
   constructor(private readonly claims: BusinessClaimsService) {}

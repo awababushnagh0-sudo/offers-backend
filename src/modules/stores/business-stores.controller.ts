@@ -10,7 +10,12 @@ import {
   UploadedFile,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { StoreMemberRole } from '../../generated/prisma/enums.js';
 import { ImageUpload, requireFile } from '../../storage/upload.decorators.js';
 import {
@@ -32,6 +37,7 @@ import { StoresService } from './stores.service.js';
 @ApiTags('Business: Store')
 @ApiBearerAuth()
 @UseGuards(StoreAccessGuard)
+@ApiParam({ name: 'storeId', type: String, format: 'uuid' })
 @Controller('business/stores/:storeId')
 export class BusinessStoresController {
   constructor(
@@ -41,7 +47,7 @@ export class BusinessStoresController {
 
   @Get()
   @ApiOperation({ summary: 'My store with its branches and staff' })
-  get(@CurrentStore() store: StoreAccess): Promise<StoreDetailDto> {
+  getStore(@CurrentStore() store: StoreAccess): Promise<StoreDetailDto> {
     return this.stores.get(store.storeId);
   }
 

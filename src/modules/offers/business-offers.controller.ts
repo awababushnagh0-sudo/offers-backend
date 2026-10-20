@@ -11,7 +11,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 import { StoreMemberRole } from '../../generated/prisma/enums.js';
 import {
   type StoreAccess,
@@ -31,6 +36,7 @@ import {
 @ApiTags('Business: Offers')
 @ApiBearerAuth()
 @UseGuards(StoreAccessGuard)
+@ApiParam({ name: 'storeId', type: String, format: 'uuid' })
 @Controller('business/stores/:storeId/offers')
 export class BusinessOffersController {
   constructor(private readonly offers: BusinessOffersService) {}
@@ -60,7 +66,7 @@ export class BusinessOffersController {
 
   @Get(':offerId')
   @ApiOperation({ summary: 'One offer with claim counts' })
-  get(
+  getOffer(
     @CurrentStore() store: StoreAccess,
     @Param('offerId', ParseUUIDPipe) offerId: string,
   ): Promise<BusinessOfferDto> {

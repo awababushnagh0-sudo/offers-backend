@@ -56,7 +56,7 @@ export class CustomerClaimsController {
 
   @Get('me/claims/:claimId')
   @ApiOperation({ summary: 'One claim, with the code for the QR' })
-  get(
+  getClaim(
     @CurrentUser() user: AuthUser,
     @Param('claimId', ParseUUIDPipe) claimId: string,
   ): Promise<CustomerClaimDto> {
