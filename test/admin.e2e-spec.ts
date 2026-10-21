@@ -352,6 +352,34 @@ describe('Admin API (e2e)', () => {
     });
   });
 
+  describe('locations', () => {
+    const resolve = (link: string) =>
+      asAdmin(api().post('/api/v1/admin/locations/resolve')).send({ link });
+
+    it('reads coordinates and full links', async () => {
+      const res = await resolve('32.8872, 13.1913').expect(200);
+      expect(res.body).toEqual({ latitude: 32.8872, longitude: 13.1913 });
+      await resolve('https://www.google.com/maps/@32.8872,13.1913,17z').expect(
+        200,
+      );
+    });
+
+    it('explains what it could not read', async () => {
+      const unreadable = await resolve('Hay Al Andalus').expect(400);
+      expect(unreadable.body.error).toBe('UnreadableLocation');
+      const abroad = await resolve('48.85, 2.35').expect(400);
+      expect(abroad.body.error).toBe('LocationOutsideLibya');
+    });
+
+    it('is for admins only', async () => {
+      await api()
+        .post('/api/v1/admin/locations/resolve')
+        .set('Authorization', `Bearer ${customerToken}`)
+        .send({ link: '32.8872, 13.1913' })
+        .expect(403);
+    });
+  });
+
   describe('store members', () => {
     let staffId: string;
 

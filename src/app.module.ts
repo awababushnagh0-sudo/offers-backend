@@ -12,6 +12,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { CategoriesModule } from './modules/categories/categories.module.js';
 import { ClaimsModule } from './modules/claims/claims.module.js';
 import { HealthModule } from './modules/health/health.module.js';
+import { LocationsModule } from './modules/locations/locations.module.js';
 import { OffersModule } from './modules/offers/offers.module.js';
 import { ProductsModule } from './modules/products/products.module.js';
 import { StoresModule } from './modules/stores/stores.module.js';
@@ -40,6 +41,7 @@ import { UsersModule } from './modules/users/users.module.js';
     AppConfigModule,
     CategoriesModule,
     StoresModule,
+    LocationsModule,
     UsersModule,
     ProductsModule,
     OffersModule,
