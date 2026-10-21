@@ -15,9 +15,10 @@ const prisma = new PrismaClient({
 });
 
 const categories = [
-  { slug: 'sweets', nameAr: 'حلويات', nameEn: 'Sweets', sortOrder: 1 },
-  { slug: 'cafes', nameAr: 'مقاهي', nameEn: 'Cafés', sortOrder: 2 },
-  { slug: 'bakeries', nameAr: 'مخابز', nameEn: 'Bakeries', sortOrder: 3 },
+  // Singular: a category labels one store.
+  { slug: 'sweet', nameAr: 'حلويات', nameEn: 'Sweets', sortOrder: 1 },
+  { slug: 'cafe', nameAr: 'مقهى', nameEn: 'Café', sortOrder: 2 },
+  { slug: 'bakery', nameAr: 'مخبز', nameEn: 'Bakery', sortOrder: 3 },
 ];
 
 const DEMO = {
@@ -70,7 +71,7 @@ async function main() {
   }
 
   const sweets = await prisma.category.findUniqueOrThrow({
-    where: { slug: 'sweets' },
+    where: { slug: 'sweet' },
   });
 
   const store = {
