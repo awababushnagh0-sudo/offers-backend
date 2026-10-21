@@ -265,6 +265,13 @@ describe('Admin API (e2e)', () => {
       expect(await prisma.user.count({ where: { id: ownerId } })).toBe(1);
     });
 
+    it('answers 400, not 500, to null for a required field', async () => {
+      const res = await asAdmin(api().patch(`/api/v1/admin/stores/${storeId}`))
+        .send({ name: null, isActive: true })
+        .expect(400);
+      expect(res.body.message).toBe('Some fields have invalid values');
+    });
+
     it('lists, searches and disables stores', async () => {
       await asAdmin(api().patch(`/api/v1/admin/stores/${storeId}`))
         .send({ isActive: false })

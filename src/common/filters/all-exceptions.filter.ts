@@ -75,6 +75,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception.code in PRISMA_ERRORS
     ) {
       ({ statusCode, error, message } = PRISMA_ERRORS[exception.code]);
+    } else if (exception instanceof Prisma.PrismaClientValidationError) {
+      // Input the DTOs let through but the database can't take, such as null
+      // for a required column. Logged in case it's our bug; only the reason
+      // line, since the full message echoes the query's data.
+      this.logger.warn(
+        `Invalid database input on ${request.method} ${request.originalUrl}: ` +
+          exception.message.trim().split('\n').at(-1),
+      );
+      statusCode = HttpStatus.BAD_REQUEST;
+      error = 'Bad Request';
+      message = 'Some fields have invalid values';
     } else {
       this.logger.error(
         `Unhandled error on ${request.method} ${request.originalUrl}`,
