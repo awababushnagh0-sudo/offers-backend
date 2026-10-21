@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PageMetaDto } from '../../../common/dto/pagination.dto.js';
-import { StoreMemberRole } from '../../../generated/prisma/enums.js';
+import { City, StoreMemberRole } from '../../../generated/prisma/enums.js';
 import { CategoryDto } from '../../categories/dto/category.dto.js';
 
 export class BranchDto {
   id: string;
   name: string;
-  city: string;
+  @ApiProperty({ enum: City, enumName: 'City' })
+  city: City;
   area: string | null;
   address: string | null;
   latitude: number;
@@ -37,6 +38,7 @@ export class StoreDetailDto {
   logoUrl: string | null;
   coverUrl: string | null;
   phone: string | null;
+  email: string | null;
   facebookUrl: string | null;
   instagramUrl: string | null;
   isActive: boolean;

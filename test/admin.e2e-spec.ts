@@ -145,7 +145,7 @@ describe('Admin API (e2e)', () => {
       categoryId,
       name: `E2E Sweets ${run}`,
       branches: [
-        { name: 'Main', city: 'Tripoli', latitude: 32.88, longitude: 13.19 },
+        { name: 'Main', city: 'TRIPOLI', latitude: 32.88, longitude: 13.19 },
       ],
       owner: { name: 'E2E Owner', phone: ownerPhone.local },
     });
@@ -166,6 +166,29 @@ describe('Admin API (e2e)', () => {
       );
     });
 
+    it('takes cities from the list only, and a valid email', async () => {
+      const res = await asAdmin(api().post('/api/v1/admin/stores'))
+        .send({
+          ...newStore(),
+          email: 'not-an-email',
+          branches: [
+            {
+              name: 'Main',
+              city: 'Tripoli',
+              latitude: 32.88,
+              longitude: 13.19,
+            },
+          ],
+        })
+        .expect(400);
+      expect(res.body.message).toEqual(
+        expect.arrayContaining([
+          'email must be an email',
+          'branches.0.city must be one of the following values: TRIPOLI',
+        ]),
+      );
+    });
+
     it('rejects an unknown category', async () => {
       await asAdmin(api().post('/api/v1/admin/stores'))
         .send({ ...newStore(), categoryId: randomUUID() })
@@ -174,8 +197,10 @@ describe('Admin API (e2e)', () => {
 
     it('creates a store with branches and an owner account', async () => {
       const res = await asAdmin(api().post('/api/v1/admin/stores'))
-        .send(newStore())
+        .send({ ...newStore(), email: 'hello@sahel-sweets.ly' })
         .expect(201);
+      expect(res.body.store.email).toBe('hello@sahel-sweets.ly');
+      expect(res.body.store.branches[0].city).toBe('TRIPOLI');
       storeId = res.body.store.id;
       createdStoreIds.push(storeId);
       branchId = res.body.store.branches[0].id;
@@ -296,7 +321,7 @@ describe('Admin API (e2e)', () => {
       )
         .send({
           name: 'Second',
-          city: 'Tripoli',
+          city: 'TRIPOLI',
           latitude: 32.9,
           longitude: 13.2,
           phone: '0921234567',

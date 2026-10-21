@@ -57,6 +57,7 @@ export class PublicStoresService {
       logoUrl: this.storage.url(store.logoUrl),
       coverUrl: this.storage.url(store.coverUrl),
       phone: store.phone,
+      email: store.email,
       facebookUrl: store.facebookUrl,
       instagramUrl: store.instagramUrl,
       category: toCategoryDto(store.category),

@@ -9,6 +9,7 @@ import { AppModule } from './../src/app.module.js';
 import { generateClaimCode } from './../src/common/utils/claim-code.js';
 import { PrismaService } from './../src/database/prisma.service.js';
 import {
+  City,
   ClaimStatus,
   OfferStatus,
   StoreMemberRole,
@@ -111,8 +112,8 @@ describe('Business API (e2e)', () => {
         name: `E2E Biz Store ${run}`,
         branches: {
           create: [
-            { name: 'A', city: 'Tripoli', latitude: 32.88, longitude: 13.19 },
-            { name: 'B', city: 'Tripoli', latitude: 32.89, longitude: 13.2 },
+            { name: 'A', city: 'TRIPOLI', latitude: 32.88, longitude: 13.19 },
+            { name: 'B', city: 'TRIPOLI', latitude: 32.89, longitude: 13.2 },
           ],
         },
       },
@@ -140,7 +141,7 @@ describe('Business API (e2e)', () => {
         branches: {
           create: {
             name: 'X',
-            city: 'Misrata',
+            city: City.TRIPOLI,
             latitude: 32.37,
             longitude: 15.09,
           },

@@ -16,7 +16,7 @@ import {
   PageMetaDto,
   PaginationQueryDto,
 } from '../../../common/dto/pagination.dto.js';
-import { OfferType } from '../../../generated/prisma/enums.js';
+import { City, OfferType } from '../../../generated/prisma/enums.js';
 import { CategoryDto } from '../../categories/dto/category.dto.js';
 import { OfferState } from '../offer-state.js';
 
@@ -92,7 +92,8 @@ export class OfferStoreSummaryDto {
 export class PublicBranchDto {
   id: string;
   name: string;
-  city: string;
+  @ApiProperty({ enum: City, enumName: 'City' })
+  city: City;
   area: string | null;
   address: string | null;
   latitude: number;

@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsBoolean,
+  IsEmail,
   IsEnum,
   IsLatitude,
   IsLongitude,
@@ -20,7 +21,7 @@ import {
   IsLibyanPhone,
   OptionalBooleanQuery,
 } from '../../../common/validation/decorators.js';
-import { StoreMemberRole } from '../../../generated/prisma/enums.js';
+import { City, StoreMemberRole } from '../../../generated/prisma/enums.js';
 
 export class CreateBranchDto {
   /** @example "حي الأندلس" */
@@ -29,11 +30,9 @@ export class CreateBranchDto {
   @MaxLength(100)
   name: string;
 
-  /** @example "Tripoli" */
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(50)
-  city: string;
+  @ApiProperty({ enum: City, enumName: 'City', example: City.TRIPOLI })
+  @IsEnum(City)
+  city: City;
 
   /** @example "Hay Al Andalus" */
   @IsOptional()
@@ -109,6 +108,15 @@ export class CreateStoreDto {
   @IsLibyanPhone()
   phone?: string;
 
+  /**
+   * For customers to get in touch.
+   * @example "hello@sahel-sweets.ly"
+   */
+  @IsOptional()
+  @IsEmail()
+  @MaxLength(255)
+  email?: string;
+
   @IsOptional()
   @IsUrl()
   facebookUrl?: string;
@@ -167,6 +175,7 @@ export class ListStoresQueryDto extends PaginationQueryDto {
 export class UpdateStoreProfileDto extends PickType(UpdateStoreDto, [
   'description',
   'phone',
+  'email',
   'facebookUrl',
   'instagramUrl',
 ] as const) {}

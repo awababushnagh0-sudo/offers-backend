@@ -29,6 +29,10 @@ enum StoreMemberRole {
   STAFF // redeems claims at the counter
 }
 
+enum City {
+  TRIPOLI // more as the app reaches them; the apps translate the names
+}
+
 enum OfferType {
   LIMITED // has a quantity; claiming reserves one for a time window
   UNLIMITED // no quantity; customers just get a code
@@ -164,6 +168,7 @@ model Store {
   logoUrl      String?  @map("logo_url")
   coverUrl     String?  @map("cover_url")
   phone        String?
+  email        String?
   facebookUrl  String?  @map("facebook_url")
   instagramUrl String?  @map("instagram_url")
   isActive     Boolean  @default(true) @map("is_active")
@@ -187,7 +192,7 @@ model Branch {
   id           String   @id @default(uuid(7)) @db.Uuid
   storeId      String   @map("store_id") @db.Uuid
   name         String
-  city         String
+  city         City
   area         String?
   address      String?
   latitude     Float

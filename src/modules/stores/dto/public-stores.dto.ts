@@ -11,6 +11,7 @@ export class PublicStoreDto {
   logoUrl: string | null;
   coverUrl: string | null;
   phone: string | null;
+  email: string | null;
   facebookUrl: string | null;
   instagramUrl: string | null;
   category: CategoryDto;

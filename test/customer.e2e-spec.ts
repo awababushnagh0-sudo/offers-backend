@@ -4,6 +4,7 @@ import request from 'supertest';
 import { AppModule } from './../src/app.module.js';
 import { PrismaService } from './../src/database/prisma.service.js';
 import {
+  City,
   ClaimStatus,
   OfferStatus,
   OfferType,
@@ -125,13 +126,13 @@ describe('Customer API (e2e)', () => {
           create: [
             {
               name: 'Near',
-              city: 'Tripoli',
+              city: City.TRIPOLI,
               latitude: 32.888,
               longitude: 13.192,
             },
             {
               name: 'Far side',
-              city: 'Tripoli',
+              city: City.TRIPOLI,
               latitude: 32.85,
               longitude: 13.05,
             },
@@ -150,7 +151,7 @@ describe('Customer API (e2e)', () => {
         branches: {
           create: {
             name: 'B',
-            city: 'Benghazi',
+            city: City.TRIPOLI,
             latitude: 32.1167,
             longitude: 20.0667,
           },
@@ -166,7 +167,7 @@ describe('Customer API (e2e)', () => {
         branches: {
           create: {
             name: 'D',
-            city: 'Tripoli',
+            city: City.TRIPOLI,
             latitude: 32.88,
             longitude: 13.19,
           },

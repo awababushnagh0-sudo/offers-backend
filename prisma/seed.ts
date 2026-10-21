@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { hash } from '@node-rs/argon2';
 import { PrismaPg } from '@prisma/adapter-pg';
 import {
+  City,
   OfferType,
   PrismaClient,
   StoreMemberRole,
@@ -89,7 +90,7 @@ async function main() {
     {
       id: DEMO.branchAndalusId,
       name: 'حي الأندلس',
-      city: 'Tripoli',
+      city: City.TRIPOLI,
       area: 'Hay Al Andalus',
       latitude: 32.871,
       longitude: 13.115,
@@ -97,7 +98,7 @@ async function main() {
     {
       id: DEMO.branchBenAshourId,
       name: 'بن عاشور',
-      city: 'Tripoli',
+      city: City.TRIPOLI,
       area: 'Ben Ashour',
       latitude: 32.879,
       longitude: 13.203,
