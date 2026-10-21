@@ -139,6 +139,38 @@ export class StoresService {
     return this.toStoreDetailDto(store);
   }
 
+  /**
+   * Deletes a store that never had offers, with its branches, products and
+   * team links (the merchant accounts stay). A store with offers holds its
+   * customers' claim history, so it can only be disabled.
+   */
+  async remove(id: string): Promise<void> {
+    const store = await this.prisma.$transaction(async (tx) => {
+      // Locking the row makes a first offer posted meanwhile wait for us,
+      // instead of being deleted along with the store.
+      const locked = await tx.$queryRaw<{ id: string }[]>`
+        SELECT id FROM stores WHERE id = ${id}::uuid FOR UPDATE`;
+      if (locked.length === 0) throw new NotFoundException('Store not found');
+      if ((await tx.offer.count({ where: { storeId: id } })) > 0) {
+        throw new ConflictException({
+          statusCode: 409,
+          error: 'StoreHasOffers',
+          message: 'This store has offers, so it can only be disabled',
+        });
+      }
+      return tx.store.delete({
+        where: { id },
+        include: { products: { select: { imagePath: true } } },
+      });
+    });
+    const files = [
+      store.logoUrl,
+      store.coverUrl,
+      ...store.products.map((product) => product.imagePath),
+    ];
+    await Promise.all(files.map((path) => this.storage.delete(path)));
+  }
+
   /** Replaces the store logo or cover photo and deletes the old file. */
   async setImage(
     storeId: string,

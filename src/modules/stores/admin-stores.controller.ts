@@ -80,6 +80,20 @@ export class AdminStoresController {
     return this.stores.update(id, dto);
   }
 
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse()
+  @ApiOperation({
+    summary: 'Delete a store that has no offers',
+    description:
+      'Removes its branches, products and team links; the merchant accounts ' +
+      "stay. A store with offers keeps its customers' history and can only " +
+      'be disabled: 409 with error "StoreHasOffers".',
+  })
+  remove(@Param('id', ParseUUIDPipe) id: string): Promise<void> {
+    return this.stores.remove(id);
+  }
+
   @Post(':id/branches')
   @ApiOperation({ summary: 'Add a branch' })
   addBranch(

@@ -236,6 +236,35 @@ describe('Admin API (e2e)', () => {
       await asAdmin(api().get('/api/v1/admin/stores/not-a-uuid')).expect(400);
     });
 
+    it('deletes a store without offers, keeping the owner account', async () => {
+      const created = await asAdmin(api().post('/api/v1/admin/stores'))
+        .send({ ...newStore(), name: `E2E Doomed Store ${run}` })
+        .expect(201);
+      const doomedId: string = created.body.store.id;
+      createdStoreIds.push(doomedId);
+      await prisma.product.create({
+        data: { storeId: doomedId, title: 'E2E Bread', regularPrice: '1.000' },
+      });
+
+      await api().delete(`/api/v1/admin/stores/${doomedId}`).expect(401);
+      await api()
+        .delete(`/api/v1/admin/stores/${doomedId}`)
+        .set('Authorization', `Bearer ${customerToken}`)
+        .expect(403);
+
+      await asAdmin(api().delete(`/api/v1/admin/stores/${doomedId}`)).expect(
+        204,
+      );
+      await asAdmin(api().get(`/api/v1/admin/stores/${doomedId}`)).expect(404);
+      await asAdmin(api().delete(`/api/v1/admin/stores/${doomedId}`)).expect(
+        404,
+      );
+      expect(await prisma.product.count({ where: { storeId: doomedId } })).toBe(
+        0,
+      );
+      expect(await prisma.user.count({ where: { id: ownerId } })).toBe(1);
+    });
+
     it('lists, searches and disables stores', async () => {
       await asAdmin(api().patch(`/api/v1/admin/stores/${storeId}`))
         .send({ isActive: false })
@@ -455,6 +484,14 @@ describe('Admin API (e2e)', () => {
         where: { id: claim.id },
       });
       expect(after.status).toBe(ClaimStatus.CANCELLED);
+    });
+
+    it('refuses to delete a store with offers', async () => {
+      const res = await asAdmin(
+        api().delete(`/api/v1/admin/stores/${storeId}`),
+      ).expect(409);
+      expect(res.body.error).toBe('StoreHasOffers');
+      await asAdmin(api().get(`/api/v1/admin/stores/${storeId}`)).expect(200);
     });
 
     it('returns dashboard stats', async () => {
