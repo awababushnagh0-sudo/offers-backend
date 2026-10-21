@@ -1,22 +1,22 @@
-export class StoreStatsDto {
+export class AdminStoreStatsDto {
   total: number;
   active: number;
 }
 
-export class UserStatsDto {
+export class AdminUserStatsDto {
   customers: number;
   merchants: number;
   /** Customers who signed up in the last 7 days. */
   newCustomersLast7Days: number;
 }
 
-export class OfferStatsDto {
+export class AdminOfferStatsDto {
   /** Active and not yet ended. */
   live: number;
   total: number;
 }
 
-export class ClaimStatsDto {
+export class AdminClaimStatsDto {
   total: number;
   redeemed: number;
   expired: number;
@@ -27,8 +27,8 @@ export class ClaimStatsDto {
 }
 
 export class AdminStatsDto {
-  stores: StoreStatsDto;
-  users: UserStatsDto;
-  offers: OfferStatsDto;
-  claims: ClaimStatsDto;
+  stores: AdminStoreStatsDto;
+  users: AdminUserStatsDto;
+  offers: AdminOfferStatsDto;
+  claims: AdminClaimStatsDto;
 }
