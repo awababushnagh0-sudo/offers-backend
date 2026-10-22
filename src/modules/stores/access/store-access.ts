@@ -18,7 +18,7 @@ export interface StoreAccess {
 
 export const STORE_ROLES_KEY = 'storeRoles';
 
-/** Limit a business route to these roles within the store (default: any member). */
+/** Limit a partner route to these roles within the store (default: any member). */
 export const StoreRoles = (...roles: StoreMemberRole[]) =>
   SetMetadata(STORE_ROLES_KEY, roles);
 

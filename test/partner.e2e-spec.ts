@@ -32,7 +32,7 @@ const HOUR = 3_600_000;
 
 // Creates its own stores and users and deletes them afterwards.
 // Uploads go to a temp folder (see vitest.config.e2e.ts).
-describe('Business API (e2e)', () => {
+describe('Partner API (e2e)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let uploadsDir: string;
@@ -46,7 +46,7 @@ describe('Business API (e2e)', () => {
     temp: phone(2),
     other: phone(3),
   };
-  const customerName = `E2E Business Customer ${run}`;
+  const customerName = `E2E Partner Customer ${run}`;
 
   let categoryId: string;
   let storeId: string;
@@ -60,7 +60,7 @@ describe('Business API (e2e)', () => {
   const api = () => request(app.getHttpServer());
   const as = (who: keyof typeof tokens, req: request.Test) =>
     req.set('Authorization', `Bearer ${tokens[who]}`);
-  const url = (path = '') => `/api/v1/business/stores/${storeId}${path}`;
+  const url = (path = '') => `/api/v1/partner/stores/${storeId}${path}`;
 
   async function merchant(phoneNumber: string, mustChangePassword = false) {
     return prisma.user.create({
@@ -186,7 +186,7 @@ describe('Business API (e2e)', () => {
 
     it("hides other stores from merchants who don't belong to them", async () => {
       await as('other', api().get(url())).expect(404);
-      await as('owner', api().get('/api/v1/business/stores/not-a-uuid')).expect(
+      await as('owner', api().get('/api/v1/partner/stores/not-a-uuid')).expect(
         404,
       );
     });
@@ -337,7 +337,7 @@ describe('Business API (e2e)', () => {
       await as(
         'other',
         api().get(
-          `/api/v1/business/stores/${otherStoreId}/products/${productId}`,
+          `/api/v1/partner/stores/${otherStoreId}/products/${productId}`,
         ),
       ).expect(404);
     });
@@ -572,7 +572,7 @@ describe('Business API (e2e)', () => {
       await as(
         'other',
         api().get(
-          `/api/v1/business/stores/${otherStoreId}/claims/code/${c.code}`,
+          `/api/v1/partner/stores/${otherStoreId}/claims/code/${c.code}`,
         ),
       ).expect(404);
     });

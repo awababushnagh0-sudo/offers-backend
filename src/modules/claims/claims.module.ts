@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { BusinessClaimsController } from './business-claims.controller.js';
-import { BusinessClaimsService } from './business-claims.service.js';
+import { PartnerClaimsController } from './partner-claims.controller.js';
+import { PartnerClaimsService } from './partner-claims.service.js';
 import { ClaimsExpiryService } from './claims-expiry.service.js';
 import { ClaimsService } from './claims.service.js';
 import { CustomerClaimsController } from './customer-claims.controller.js';
 
 @Module({
-  controllers: [CustomerClaimsController, BusinessClaimsController],
-  providers: [ClaimsService, BusinessClaimsService, ClaimsExpiryService],
+  controllers: [CustomerClaimsController, PartnerClaimsController],
+  providers: [ClaimsService, PartnerClaimsService, ClaimsExpiryService],
 })
 export class ClaimsModule {}

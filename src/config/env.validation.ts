@@ -46,7 +46,7 @@ export const envSchema = z
     SERVE_UPLOADS: booleanString.default(true),
 
     // Apps older than these versions are told to update (semver, e.g. 1.2.0).
-    BUSINESS_APP_MIN_VERSION: semver.default('1.0.0'),
+    PARTNER_APP_MIN_VERSION: semver.default('1.0.0'),
     CUSTOMER_APP_MIN_VERSION: semver.default('1.0.0'),
     ADMIN_APP_MIN_VERSION: semver.default('1.0.0'),
 

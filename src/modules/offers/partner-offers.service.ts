@@ -16,13 +16,13 @@ import {
 import { StorageService } from '../../storage/storage.service.js';
 import type { StoreAccess } from '../stores/access/store-access.js';
 import type {
-  BusinessOfferDto,
-  BusinessOfferListDto,
+  PartnerOfferDto,
+  PartnerOfferListDto,
   ClaimCountsDto,
   CreateOfferDto,
-  ListBusinessOffersQueryDto,
+  ListPartnerOffersQueryDto,
   UpdateOfferDto,
-} from './dto/business-offers.dto.js';
+} from './dto/partner-offers.dto.js';
 import { discountPercent, offerState } from './offer-state.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -40,7 +40,7 @@ type OfferWithRelations = Prisma.OfferGetPayload<{
 }>;
 
 @Injectable()
-export class BusinessOffersService {
+export class PartnerOffersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
@@ -48,8 +48,8 @@ export class BusinessOffersService {
 
   async list(
     storeId: string,
-    query: ListBusinessOffersQueryDto,
-  ): Promise<BusinessOfferListDto> {
+    query: ListPartnerOffersQueryDto,
+  ): Promise<PartnerOfferListDto> {
     const where: Prisma.OfferWhereInput = { storeId, status: query.status };
     const [offers, total] = await this.prisma.$transaction([
       this.prisma.offer.findMany({
@@ -67,7 +67,7 @@ export class BusinessOffersService {
     };
   }
 
-  async get(storeId: string, offerId: string): Promise<BusinessOfferDto> {
+  async get(storeId: string, offerId: string): Promise<PartnerOfferDto> {
     const offer = await this.findInStore(storeId, offerId);
     const counts = await this.claimCounts([offer.id]);
     return this.toDto(offer, counts.get(offer.id));
@@ -76,7 +76,7 @@ export class BusinessOffersService {
   async create(
     store: StoreAccess,
     dto: CreateOfferDto,
-  ): Promise<BusinessOfferDto> {
+  ): Promise<PartnerOfferDto> {
     assertStoreActive(store);
 
     const product = await this.prisma.product.findFirst({
@@ -139,7 +139,7 @@ export class BusinessOffersService {
     storeId: string,
     offerId: string,
     dto: UpdateOfferDto,
-  ): Promise<BusinessOfferDto> {
+  ): Promise<PartnerOfferDto> {
     const offer = await this.findInStore(storeId, offerId);
     assertEditable(offer.status);
     if (dto.endsAt) assertValidEnd(offer.startsAt, dto.endsAt);
@@ -185,7 +185,7 @@ export class BusinessOffersService {
     storeId: string,
     offerId: string,
     { from, to }: { from: OfferStatus[]; to: OfferStatus },
-  ): Promise<BusinessOfferDto> {
+  ): Promise<PartnerOfferDto> {
     const offer = await this.findInStore(storeId, offerId);
     assertEditable(offer.status);
     if (!from.includes(offer.status)) {
@@ -259,7 +259,7 @@ export class BusinessOffersService {
   private toDto(
     offer: OfferWithRelations,
     counts: ClaimCountsDto | undefined,
-  ): BusinessOfferDto {
+  ): PartnerOfferDto {
     return {
       id: offer.id,
       productId: offer.productId,

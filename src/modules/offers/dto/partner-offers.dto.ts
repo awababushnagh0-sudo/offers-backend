@@ -104,7 +104,7 @@ export class UpdateOfferDto extends PickType(CreateOfferDto, [
   endsAt?: Date;
 }
 
-export class ListBusinessOffersQueryDto extends PaginationQueryDto {
+export class ListPartnerOffersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ enum: OfferStatus, enumName: 'OfferStatus' })
   @IsOptional()
   @IsEnum(OfferStatus)
@@ -118,7 +118,7 @@ export class ClaimCountsDto {
   cancelled: number;
 }
 
-export class BusinessOfferDto {
+export class PartnerOfferDto {
   id: string;
   productId: string;
   title: string;
@@ -150,7 +150,7 @@ export class BusinessOfferDto {
   createdAt: Date;
 }
 
-export class BusinessOfferListDto {
-  items: BusinessOfferDto[];
+export class PartnerOfferListDto {
+  items: PartnerOfferDto[];
   meta: PageMetaDto;
 }

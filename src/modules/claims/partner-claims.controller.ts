@@ -20,22 +20,22 @@ import {
   CurrentStore,
 } from '../stores/access/store-access.js';
 import { StoreAccessGuard } from '../stores/access/store-access.guard.js';
-import { BusinessClaimsService } from './business-claims.service.js';
+import { PartnerClaimsService } from './partner-claims.service.js';
 import {
-  BusinessClaimDto,
-  BusinessClaimListDto,
-  ListBusinessClaimsQueryDto,
+  PartnerClaimDto,
+  PartnerClaimListDto,
+  ListPartnerClaimsQueryDto,
   RedeemClaimDto,
-} from './dto/business-claims.dto.js';
+} from './dto/partner-claims.dto.js';
 
 // Owners and staff can both use these: redeeming is the counter's job.
-@ApiTags('Business: Claims')
+@ApiTags('Partner: Claims')
 @ApiBearerAuth()
 @UseGuards(StoreAccessGuard)
 @ApiParam({ name: 'storeId', type: String, format: 'uuid' })
-@Controller('business/stores/:storeId/claims')
-export class BusinessClaimsController {
-  constructor(private readonly claims: BusinessClaimsService) {}
+@Controller('partner/stores/:storeId/claims')
+export class PartnerClaimsController {
+  constructor(private readonly claims: PartnerClaimsService) {}
 
   @Get()
   @ApiOperation({
@@ -43,8 +43,8 @@ export class BusinessClaimsController {
   })
   list(
     @CurrentStore() store: StoreAccess,
-    @Query() query: ListBusinessClaimsQueryDto,
-  ): Promise<BusinessClaimListDto> {
+    @Query() query: ListPartnerClaimsQueryDto,
+  ): Promise<PartnerClaimListDto> {
     return this.claims.list(store, query);
   }
 
@@ -56,7 +56,7 @@ export class BusinessClaimsController {
   lookup(
     @CurrentStore() store: StoreAccess,
     @Param('code') code: string,
-  ): Promise<BusinessClaimDto> {
+  ): Promise<PartnerClaimDto> {
     return this.claims.lookup(store, code);
   }
 
@@ -70,7 +70,7 @@ export class BusinessClaimsController {
   redeem(
     @CurrentStore() store: StoreAccess,
     @Body() dto: RedeemClaimDto,
-  ): Promise<BusinessClaimDto> {
+  ): Promise<PartnerClaimDto> {
     return this.claims.redeem(store, dto);
   }
 }

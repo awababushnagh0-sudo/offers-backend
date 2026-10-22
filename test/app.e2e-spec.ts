@@ -31,7 +31,7 @@ describe('App (e2e)', () => {
       .get('/api/v1/app-config')
       .expect(200)
       .expect((res) => {
-        expect(res.body.business.minVersion).toMatch(/^\d+\.\d+\.\d+$/);
+        expect(res.body.partner.minVersion).toMatch(/^\d+\.\d+\.\d+$/);
         expect(res.body.customer.minVersion).toMatch(/^\d+\.\d+\.\d+$/);
       });
   });

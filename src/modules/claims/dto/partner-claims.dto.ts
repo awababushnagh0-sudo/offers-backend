@@ -32,7 +32,7 @@ export class RedeemClaimDto {
   branchId?: string;
 }
 
-export class ListBusinessClaimsQueryDto extends PaginationQueryDto {
+export class ListPartnerClaimsQueryDto extends PaginationQueryDto {
   /** Defaults to RESERVED: customers who are on their way. */
   @ApiPropertyOptional({ enum: ClaimStatus, enumName: 'ClaimStatus' })
   @IsOptional()
@@ -50,7 +50,7 @@ export class ClaimOfferDto {
   thumbUrl: string | null;
 }
 
-export class BusinessClaimDto {
+export class PartnerClaimDto {
   id: string;
   code: string;
   @ApiProperty({ enum: ClaimStatus, enumName: 'ClaimStatus' })
@@ -67,7 +67,7 @@ export class BusinessClaimDto {
   problem: string | null;
 }
 
-export class BusinessClaimListDto {
-  items: BusinessClaimDto[];
+export class PartnerClaimListDto {
+  items: PartnerClaimDto[];
   meta: PageMetaDto;
 }

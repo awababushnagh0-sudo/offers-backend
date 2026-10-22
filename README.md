@@ -1,6 +1,6 @@
 # Offers API
 
-NestJS backend for the customer app, business app and admin dashboard. See [`ROADMAP.md`](ROADMAP.md) for the plan.
+NestJS backend for the customer app, partner app and admin dashboard. See [`ROADMAP.md`](ROADMAP.md) for the plan.
 
 ## Run locally
 
@@ -57,7 +57,7 @@ Users on a temporary password (new merchants, reset passwords, new admins) get `
 | `/api/v1/categories`, `/api/v1/offers`, `/api/v1/stores/:id` | Public | Browsing; send `lat`/`lng` for distances |
 | `/api/v1/offers/:id/claim`, `/api/v1/me/...`, `/api/v1/stores/:id/follow` | Customers | Claims, my claims, follows |
 | `/api/v1/admin/...` | Admins | `@Roles(UserRole.ADMIN)` |
-| `/api/v1/business/stores/:storeId/...` | Store owners and staff | `StoreAccessGuard`: members of that store only; `@StoreRoles(OWNER)` for owner-only routes; `@CurrentStore()` gives the membership |
+| `/api/v1/partner/stores/:storeId/...` | Store owners and staff | `StoreAccessGuard`: members of that store only; `@StoreRoles(OWNER)` for owner-only routes; `@CurrentStore()` gives the membership |
 
 ## Background jobs
 
@@ -131,4 +131,4 @@ scripts/                   # one-off scripts (create admin)
 test/                      # e2e tests
 ```
 
-Each feature lives in `src/modules/<feature>/` with its own module, controller, service and DTOs. Controllers are split by audience: `public-*` (browsing), `customer-*`, `business-*` (stores) and `admin-*`.
+Each feature lives in `src/modules/<feature>/` with its own module, controller, service and DTOs. Controllers are split by audience: `public-*` (browsing), `customer-*`, `partner-*` (stores) and `admin-*`.

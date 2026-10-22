@@ -7,7 +7,7 @@ export class AppVersionDto {
 }
 
 export class AppConfigDto {
-  business: AppVersionDto;
+  partner: AppVersionDto;
   customer: AppVersionDto;
   admin: AppVersionDto;
 }

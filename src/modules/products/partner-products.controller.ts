@@ -37,13 +37,13 @@ import {
 } from './dto/products.dto.js';
 import { ProductsService } from './products.service.js';
 
-@ApiTags('Business: Products')
+@ApiTags('Partner: Products')
 @ApiBearerAuth()
 @UseGuards(StoreAccessGuard)
 @ApiParam({ name: 'storeId', type: String, format: 'uuid' })
 @StoreRoles(StoreMemberRole.OWNER)
-@Controller('business/stores/:storeId/products')
-export class BusinessProductsController {
+@Controller('partner/stores/:storeId/products')
+export class PartnerProductsController {
   constructor(private readonly products: ProductsService) {}
 
   @Get()

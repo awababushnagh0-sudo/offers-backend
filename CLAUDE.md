@@ -6,7 +6,7 @@ has the commands. If a rule gets in the way of a task, say so and ask; don't qui
 around it.
 
 NestJS + Prisma + Postgres, ESM, strict TypeScript. Three Flutter apps (customer,
-business, admin) call this API through a Dart client generated from the Swagger spec, so
+partner, admin) call this API through a Dart client generated from the Swagger spec, so
 **the API shape is a contract**: changing it can break apps already on people's phones.
 
 ## 1. Where code goes
@@ -31,7 +31,7 @@ test/                    e2e tests, one file per audience
   |---|---|---|
   | `public-offers.controller.ts` | `/offers` | anyone (`@Public()`) |
   | `customer-claims.controller.ts` | `/offers/:id/claim`, `/me/...` | signed-in customers |
-  | `business-products.controller.ts` | `/business/stores/:storeId/...` | store owners and staff |
+  | `partner-products.controller.ts` | `/partner/stores/:storeId/...` | store owners and staff |
   | `admin-stores.controller.ts` | `/admin/...` | admins (`@Roles(UserRole.ADMIN)`) |
 
 - **Controllers are thin**: read the request, call one service method, return its DTO.
@@ -44,7 +44,7 @@ test/                    e2e tests, one file per audience
 
 - Every route needs a signed-in user unless it's marked `@Public()`. Use `@Roles(...)`
   for role checks and `@CurrentUser()` to get the user.
-- Business routes live under `business/stores/:storeId` with `StoreAccessGuard`;
+- Partner routes live under `partner/stores/:storeId` with `StoreAccessGuard`;
   owner-only routes add `@StoreRoles(StoreMemberRole.OWNER)`. Read the store with
   `@CurrentStore()`.
 - **Scope every query to who is asking.** A product, offer or claim is looked up by its
@@ -69,7 +69,7 @@ test/                    e2e tests, one file per audience
   (`AdminStatsDto`, `StoreStatsDto`).
 - Doc comments and `@example` on DTO fields become the Swagger docs (the Swagger plugin
   reads them). Every route has `@ApiOperation({ summary })`, and every controller has
-  `@ApiTags` (`'Business: Products'`) and `@ApiBearerAuth()` unless it's public.
+  `@ApiTags` (`'Partner: Products'`) and `@ApiBearerAuth()` unless it's public.
 - Lists are paginated: the query extends `PaginationQueryDto`, the service uses
   `pageArgs` / `pageMeta`, and the response is `{ items, meta }`.
 - **Changing the contract:**

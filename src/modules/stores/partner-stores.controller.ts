@@ -34,12 +34,12 @@ import { BranchDto, StoreDetailDto } from './dto/store-responses.dto.js';
 import { StoreStatsService } from './store-stats.service.js';
 import { StoresService } from './stores.service.js';
 
-@ApiTags('Business: Store')
+@ApiTags('Partner: Store')
 @ApiBearerAuth()
 @UseGuards(StoreAccessGuard)
 @ApiParam({ name: 'storeId', type: String, format: 'uuid' })
-@Controller('business/stores/:storeId')
-export class BusinessStoresController {
+@Controller('partner/stores/:storeId')
+export class PartnerStoresController {
   constructor(
     private readonly stores: StoresService,
     private readonly stats: StoreStatsService,

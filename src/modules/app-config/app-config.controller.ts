@@ -17,8 +17,8 @@ export class AppConfigController {
   })
   getAppConfig(): AppConfigDto {
     return {
-      business: {
-        minVersion: this.config.get('BUSINESS_APP_MIN_VERSION', {
+      partner: {
+        minVersion: this.config.get('PARTNER_APP_MIN_VERSION', {
           infer: true,
         }),
       },

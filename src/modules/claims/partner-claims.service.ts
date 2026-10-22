@@ -13,11 +13,11 @@ import { ClaimStatus } from '../../generated/prisma/enums.js';
 import { StorageService } from '../../storage/storage.service.js';
 import type { StoreAccess } from '../stores/access/store-access.js';
 import type {
-  BusinessClaimDto,
-  BusinessClaimListDto,
-  ListBusinessClaimsQueryDto,
+  PartnerClaimDto,
+  PartnerClaimListDto,
+  ListPartnerClaimsQueryDto,
   RedeemClaimDto,
-} from './dto/business-claims.dto.js';
+} from './dto/partner-claims.dto.js';
 
 const claimInclude = {
   user: { select: { name: true } },
@@ -37,7 +37,7 @@ type ClaimWithOffer = Prisma.ClaimGetPayload<{ include: typeof claimInclude }>;
 
 /** The store side of claims: who's coming, looking up a code, redeeming it. */
 @Injectable()
-export class BusinessClaimsService {
+export class PartnerClaimsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
@@ -45,8 +45,8 @@ export class BusinessClaimsService {
 
   async list(
     store: StoreAccess,
-    query: ListBusinessClaimsQueryDto,
-  ): Promise<BusinessClaimListDto> {
+    query: ListPartnerClaimsQueryDto,
+  ): Promise<PartnerClaimListDto> {
     const status = query.status ?? ClaimStatus.RESERVED;
     const where: Prisma.ClaimWhereInput = {
       status,
@@ -77,14 +77,14 @@ export class BusinessClaimsService {
   }
 
   /** What the cashier sees after scanning, before confirming. */
-  async lookup(store: StoreAccess, code: string): Promise<BusinessClaimDto> {
+  async lookup(store: StoreAccess, code: string): Promise<PartnerClaimDto> {
     return this.toDto(await this.findByCode(store, code), store);
   }
 
   async redeem(
     store: StoreAccess,
     dto: RedeemClaimDto,
-  ): Promise<BusinessClaimDto> {
+  ): Promise<PartnerClaimDto> {
     const claim = await this.findByCode(store, dto.code);
     const problem = redeemProblem(claim, store);
     if (problem) throw new ConflictException(problem);
@@ -153,7 +153,7 @@ export class BusinessClaimsService {
     return branchId;
   }
 
-  private toDto(claim: ClaimWithOffer, store: StoreAccess): BusinessClaimDto {
+  private toDto(claim: ClaimWithOffer, store: StoreAccess): PartnerClaimDto {
     const problem = redeemProblem(claim, store);
     return {
       id: claim.id,

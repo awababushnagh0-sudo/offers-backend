@@ -15,7 +15,7 @@ datasource db {
 
 enum UserRole {
   CUSTOMER // uses the customer app
-  MERCHANT // store owner or staff, uses the business app
+  MERCHANT // store owner or staff, uses the partner app
   ADMIN // our team, uses the admin dashboard
   EDITOR // our team, limited: adds and edits, can't delete or manage the team
 }

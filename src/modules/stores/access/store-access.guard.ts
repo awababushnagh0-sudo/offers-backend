@@ -17,7 +17,7 @@ import { STORE_ROLES_KEY } from './store-access.js';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * For routes under /business/stores/:storeId. Lets the request through only
+ * For routes under /partner/stores/:storeId. Lets the request through only
  * if the logged-in merchant is a member of that store (and has the role the
  * route needs). Non-members get 404 so store IDs can't be probed.
  */

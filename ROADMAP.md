@@ -8,7 +8,7 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 | Part | Tech | Who uses it |
 |---|---|---|
 | Customer app | Flutter (flavor `customer`) | Public: browse offers, claim, show QR at the store |
-| Business app | Flutter (flavor `business`) | Store owners and staff: post offers, scan QR codes |
+| Partner app | Flutter (`apps/partner`) | Store owners and staff: post offers, scan QR codes |
 | Admin dashboard | Flutter Web | Our team: create stores, moderate, stats |
 | Backend API | NestJS + Prisma + Postgres | All three apps |
 | Hosting | Libyan Spider VPS, Docker Compose, Caddy | Paid in LYD |
@@ -73,7 +73,7 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 - [x] Database conflicts return 409, missing related records 400
 - [x] e2e tests for the admin API
 
-## Phase 4: Business API ✅
+## Phase 4: Partner API ✅
 
 - [x] Store access guard: merchants only reach stores they belong to (others get 404); `@StoreRoles(OWNER)` for owner-only routes
 - [x] Temporary passwords: merchants and admins must change them before using anything else (`error: "PasswordChangeRequired"`)
@@ -84,7 +84,7 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 - [x] Disabled stores can't post or resume offers
 - [x] Claims at the counter: look up a scanned code, redeem once (safe if scanned twice at the same moment), upcoming pickups; staff limited to their branch
 - [x] Store stats: today (Libya time), last 30 days, top offers
-- [x] e2e tests for the business API
+- [x] e2e tests for the partner API
 
 Decisions:
 - **Owners** manage the store, products and offers. **Staff** can view offers and claims and redeem at the counter.
@@ -114,10 +114,10 @@ Decisions:
 
 ## Phase 7: Flutter apps
 
-- [ ] One Flutter project with `customer` and `business` flavors
+- [ ] One Flutter project with `customer` and `partner` flavors
 - [ ] Dart API client generated from Swagger (`/docs/json`)
 - [ ] Customer app: home feed, map or nearby, offer details, claim + QR, my claims, followed stores, sign-in
-- [ ] Business app: login, post offer (camera + compression), my products, my offers, QR scanner, stats
+- [ ] Partner app: login, post offer (camera + compression), my products, my offers, QR scanner, stats
 
 ## Phase 8: Admin dashboard
 

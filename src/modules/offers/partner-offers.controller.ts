@@ -24,29 +24,29 @@ import {
   StoreRoles,
 } from '../stores/access/store-access.js';
 import { StoreAccessGuard } from '../stores/access/store-access.guard.js';
-import { BusinessOffersService } from './business-offers.service.js';
+import { PartnerOffersService } from './partner-offers.service.js';
 import {
-  BusinessOfferDto,
-  BusinessOfferListDto,
+  PartnerOfferDto,
+  PartnerOfferListDto,
   CreateOfferDto,
-  ListBusinessOffersQueryDto,
+  ListPartnerOffersQueryDto,
   UpdateOfferDto,
-} from './dto/business-offers.dto.js';
+} from './dto/partner-offers.dto.js';
 
-@ApiTags('Business: Offers')
+@ApiTags('Partner: Offers')
 @ApiBearerAuth()
 @UseGuards(StoreAccessGuard)
 @ApiParam({ name: 'storeId', type: String, format: 'uuid' })
-@Controller('business/stores/:storeId/offers')
-export class BusinessOffersController {
-  constructor(private readonly offers: BusinessOffersService) {}
+@Controller('partner/stores/:storeId/offers')
+export class PartnerOffersController {
+  constructor(private readonly offers: PartnerOffersService) {}
 
   @Get()
   @ApiOperation({ summary: "The store's offers with claim counts" })
   list(
     @CurrentStore() store: StoreAccess,
-    @Query() query: ListBusinessOffersQueryDto,
-  ): Promise<BusinessOfferListDto> {
+    @Query() query: ListPartnerOffersQueryDto,
+  ): Promise<PartnerOfferListDto> {
     return this.offers.list(store.storeId, query);
   }
 
@@ -60,7 +60,7 @@ export class BusinessOffersController {
   create(
     @CurrentStore() store: StoreAccess,
     @Body() dto: CreateOfferDto,
-  ): Promise<BusinessOfferDto> {
+  ): Promise<PartnerOfferDto> {
     return this.offers.create(store, dto);
   }
 
@@ -69,7 +69,7 @@ export class BusinessOffersController {
   getOffer(
     @CurrentStore() store: StoreAccess,
     @Param('offerId', ParseUUIDPipe) offerId: string,
-  ): Promise<BusinessOfferDto> {
+  ): Promise<PartnerOfferDto> {
     return this.offers.get(store.storeId, offerId);
   }
 
@@ -80,7 +80,7 @@ export class BusinessOffersController {
     @CurrentStore() store: StoreAccess,
     @Param('offerId', ParseUUIDPipe) offerId: string,
     @Body() dto: UpdateOfferDto,
-  ): Promise<BusinessOfferDto> {
+  ): Promise<PartnerOfferDto> {
     return this.offers.update(store.storeId, offerId, dto);
   }
 
@@ -94,7 +94,7 @@ export class BusinessOffersController {
   pause(
     @CurrentStore() store: StoreAccess,
     @Param('offerId', ParseUUIDPipe) offerId: string,
-  ): Promise<BusinessOfferDto> {
+  ): Promise<PartnerOfferDto> {
     return this.offers.pause(store.storeId, offerId);
   }
 
@@ -105,7 +105,7 @@ export class BusinessOffersController {
   resume(
     @CurrentStore() store: StoreAccess,
     @Param('offerId', ParseUUIDPipe) offerId: string,
-  ): Promise<BusinessOfferDto> {
+  ): Promise<PartnerOfferDto> {
     return this.offers.resume(store, offerId);
   }
 
@@ -119,7 +119,7 @@ export class BusinessOffersController {
   end(
     @CurrentStore() store: StoreAccess,
     @Param('offerId', ParseUUIDPipe) offerId: string,
-  ): Promise<BusinessOfferDto> {
+  ): Promise<PartnerOfferDto> {
     return this.offers.end(store.storeId, offerId);
   }
 }
