@@ -18,6 +18,7 @@ import {
 } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/dto/pagination.dto.js';
 import {
+  EmptyAsNull,
   IsLibyanPhone,
   OptionalBooleanQuery,
 } from '../../../common/validation/decorators.js';
@@ -100,11 +101,13 @@ export class CreateStoreDto {
   name: string;
 
   @IsOptional()
+  @EmptyAsNull()
   @IsString()
   @MaxLength(1000)
   description?: string;
 
   @IsOptional()
+  @EmptyAsNull()
   @IsLibyanPhone()
   phone?: string;
 
@@ -113,15 +116,18 @@ export class CreateStoreDto {
    * @example "hello@sahel-sweets.ly"
    */
   @IsOptional()
+  @EmptyAsNull()
   @IsEmail()
   @MaxLength(255)
   email?: string;
 
   @IsOptional()
+  @EmptyAsNull()
   @IsUrl()
   facebookUrl?: string;
 
   @IsOptional()
+  @EmptyAsNull()
   @IsUrl()
   instagramUrl?: string;
 

@@ -72,7 +72,12 @@ export class AdminStoresController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Edit, disable or enable a store' })
+  @ApiOperation({
+    summary: 'Edit, disable or enable a store',
+    description:
+      'Send only the fields to change. An empty string clears an optional ' +
+      'field (description, phone, email, links).',
+  })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateStoreDto,

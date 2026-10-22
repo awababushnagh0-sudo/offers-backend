@@ -290,6 +290,39 @@ describe('Admin API (e2e)', () => {
       expect(await prisma.user.count({ where: { id: ownerId } })).toBe(1);
     });
 
+    it('edits a store and clears its optional fields with empty strings', async () => {
+      const edited = await asAdmin(
+        api().patch(`/api/v1/admin/stores/${storeId}`),
+      )
+        .send({
+          description: 'New description',
+          phone: '0921234567',
+          email: 'shop@example.ly',
+          instagramUrl: 'https://instagram.com/shop',
+        })
+        .expect(200);
+      expect(edited.body).toMatchObject({
+        description: 'New description',
+        phone: '+218921234567',
+        email: 'shop@example.ly',
+        instagramUrl: 'https://instagram.com/shop',
+      });
+
+      const cleared = await asAdmin(
+        api().patch(`/api/v1/admin/stores/${storeId}`),
+      )
+        .send({ description: '', phone: '', email: '', instagramUrl: '' })
+        .expect(200);
+      expect(cleared.body.description).toBeNull();
+      expect(cleared.body.phone).toBeNull();
+      expect(cleared.body.email).toBeNull();
+      expect(cleared.body.instagramUrl).toBeNull();
+
+      await asAdmin(api().patch(`/api/v1/admin/stores/${storeId}`))
+        .send({ name: '' })
+        .expect(400);
+    });
+
     it('answers 400, not 500, to null for a required field', async () => {
       const res = await asAdmin(api().patch(`/api/v1/admin/stores/${storeId}`))
         .send({ name: null, isActive: true })

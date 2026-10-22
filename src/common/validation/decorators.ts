@@ -19,6 +19,16 @@ export function IsLibyanPhone() {
   );
 }
 
+/**
+ * An optional text field that an empty string clears: "" is stored as null.
+ * Put it with `@IsOptional()`, which then skips the other checks.
+ */
+export function EmptyAsNull() {
+  return Transform(({ value }: { value: unknown }) =>
+    value === '' ? null : value,
+  );
+}
+
 /** Optional boolean query parameter: accepts "true" / "false". */
 export function OptionalBooleanQuery() {
   return applyDecorators(
