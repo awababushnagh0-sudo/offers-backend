@@ -1,0 +1,57 @@
+{
+  // Terminal → Run Task...
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Database: start and migrate",
+      "detail": "Starts Postgres in Docker, applies new migrations and regenerates the Prisma client",
+      "type": "shell",
+      "command": "npm run db:up && npx prisma migrate deploy && npm run db:generate",
+      "problemMatcher": []
+    },
+    {
+      "label": "Database: stop",
+      "type": "shell",
+      "command": "npm run db:down",
+      "problemMatcher": []
+    },
+    {
+      "label": "Database: new migration (after editing schema.prisma)",
+      "type": "shell",
+      "command": "npm run db:migrate -- --name ${input:migrationName} && npm run db:generate",
+      "problemMatcher": []
+    },
+    {
+      "label": "Database: seed (dev logins and demo store)",
+      "type": "shell",
+      "command": "npm run db:seed",
+      "problemMatcher": []
+    },
+    {
+      "label": "Database: reset (deletes all data, then migrates and seeds)",
+      "type": "shell",
+      "command": "npm run db:reset",
+      "problemMatcher": []
+    },
+    {
+      "label": "Prisma: generate client",
+      "type": "shell",
+      "command": "npm run db:generate",
+      "problemMatcher": []
+    },
+    {
+      "label": "Check everything (format, lint, build, tests)",
+      "type": "shell",
+      "command": "npm run format && npm run lint && npm run build && npm test && npm run test:e2e",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "migrationName",
+      "type": "promptString",
+      "description": "What changed, in snake_case (e.g. add_store_email)"
+    }
+  ]
+}

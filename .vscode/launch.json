@@ -1,0 +1,44 @@
+{
+  // Run configurations for VS Code (Run and Debug panel, or F5).
+  // Each one starts the database first (Docker must be running).
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API · dev (database, migrations, watch + debugger)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run start:dev",
+      "preLaunchTask": "Database: start and migrate"
+    },
+    {
+      "name": "Prisma Studio (browse the database)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run db:studio",
+      "preLaunchTask": "Database: start and migrate"
+    },
+    {
+      "name": "Tests · unit",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm test"
+    },
+    {
+      "name": "Tests · e2e",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run test:e2e",
+      "preLaunchTask": "Database: start and migrate"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "API + Prisma Studio",
+      "configurations": [
+        "API · dev (database, migrations, watch + debugger)",
+        "Prisma Studio (browse the database)"
+      ],
+      "stopAll": true
+    }
+  ]
+}

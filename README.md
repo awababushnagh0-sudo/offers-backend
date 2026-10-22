@@ -15,6 +15,11 @@ npm run db:seed        # categories + a demo store with offers
 npm run start:dev
 ```
 
+In VS Code, **Run and Debug → "API · dev"** does the last steps for you: it starts the
+database, applies new migrations, regenerates the Prisma client and runs the API with the
+debugger attached. "API + Prisma Studio" also opens Prisma Studio. The other database
+commands (new migration, seed, reset, stop) are under **Terminal → Run Task**.
+
 - API: http://localhost:3000/api/v1
 - Health: http://localhost:3000/api/v1/health (checks the database too)
 - Swagger: http://localhost:3000/docs

@@ -36,3 +36,9 @@ lerna-debug.log*
 
 # Uploaded files (local development)
 /uploads
+
+# VS Code: share the run configurations, keep personal settings out
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
