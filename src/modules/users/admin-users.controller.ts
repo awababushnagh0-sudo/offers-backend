@@ -17,9 +17,13 @@ import { Roles } from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../generated/prisma/enums.js';
 import {
   AdminUserDto,
+  CreateDashboardUserDto,
+  CreatedDashboardUserDto,
+  ListTeamQueryDto,
   ListUsersQueryDto,
   ResetPasswordResponseDto,
   SetUserStatusDto,
+  UpdateDashboardUserDto,
   UserListDto,
 } from './dto/admin-users.dto.js';
 import { UsersService } from './users.service.js';
@@ -35,6 +39,44 @@ export class AdminUsersController {
   @ApiOperation({ summary: 'List and search users' })
   list(@Query() query: ListUsersQueryDto): Promise<UserListDto> {
     return this.users.list(query);
+  }
+
+  @Get('team')
+  @ApiOperation({ summary: 'List and search our team: admins and editors' })
+  listTeam(@Query() query: ListTeamQueryDto): Promise<UserListDto> {
+    return this.users.listTeam(query);
+  }
+
+  @Post()
+  @ApiOperation({
+    summary: 'Add an admin or editor to the dashboard',
+    description:
+      'Their temporary password is shown only once; they must change it on ' +
+      'their first login.',
+  })
+  create(
+    @Body() dto: CreateDashboardUserDto,
+  ): Promise<CreatedDashboardUserDto> {
+    return this.users.createDashboardUser(dto);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'One user' })
+  getUser(@Param('id', ParseUUIDPipe) id: string): Promise<AdminUserDto> {
+    return this.users.get(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({
+    summary: 'Rename an admin or editor, or change their role',
+    description: 'Admins cannot change their own role.',
+  })
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateDashboardUserDto,
+    @CurrentUser() admin: AuthUser,
+  ): Promise<AdminUserDto> {
+    return this.users.updateDashboardUser(id, dto, admin.id);
   }
 
   @Patch(':id/status')

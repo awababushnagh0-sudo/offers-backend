@@ -66,6 +66,7 @@ Stores post offers, customers browse and claim them, then pay cash in store.
 - [x] Stores: list/search/filter, details, edit, disable; add and edit branches
 - [x] Staff: add owner/staff (staff can be limited to a branch), remove (never the last owner)
 - [x] Users: search (name, email, phone in any format), disable/enable (logs out everywhere), reset password
+- [x] Dashboard team: admins and editors. Editors can't delete stores, take offers down, remove store staff or manage users; admins add either with a temporary password
 - [x] Offers: list across stores, take down (cancels active reservations)
 - [x] Dashboard stats
 - [x] `npm run admin:create` for the first admin in production

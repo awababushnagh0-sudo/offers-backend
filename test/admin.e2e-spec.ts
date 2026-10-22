@@ -29,6 +29,8 @@ describe('Admin API (e2e)', () => {
   const staffRun = (run + 1) % 100_000_000;
   const staffPhone = `09${String(staffRun).padStart(8, '1')}`;
   const customerName = `E2E Admin Customer ${run}`;
+  const editorEmail = `e2e-editor-${run}@offers.local`;
+  let editorId: string;
   const categorySlug = `e2e-cat-${run}`;
   const hiddenSlug = `e2e-hidden-${run}`;
   const createdStoreIds: string[] = [];
@@ -80,6 +82,7 @@ describe('Admin API (e2e)', () => {
       where: {
         OR: [
           { email: admin.email },
+          { email: editorEmail },
           { phone: ownerPhone.e164 },
           {
             phone: { startsWith: `+2189${String(staffRun).padStart(8, '1')}` },
@@ -520,6 +523,147 @@ describe('Admin API (e2e)', () => {
         .post('/api/v1/auth/login')
         .send({ identifier: ownerPhone.local, password: ownerTempPassword })
         .expect(200);
+    });
+
+    it('adds an editor, who can edit but not delete or manage the team', async () => {
+      const created = await asAdmin(api().post('/api/v1/admin/users'))
+        .send({
+          name: ' Sara ',
+          email: editorEmail.toUpperCase(),
+          role: 'EDITOR',
+        })
+        .expect(201);
+      editorId = created.body.user.id;
+      expect(created.body.user).toMatchObject({
+        name: 'Sara',
+        email: editorEmail,
+        role: 'EDITOR',
+        mustChangePassword: true,
+      });
+
+      const login = await api()
+        .post('/api/v1/auth/login')
+        .send({
+          identifier: editorEmail,
+          password: created.body.temporaryPassword,
+        })
+        .expect(200);
+      const changed = await api()
+        .post('/api/v1/auth/change-password')
+        .set('Authorization', `Bearer ${login.body.accessToken}`)
+        .send({
+          currentPassword: created.body.temporaryPassword,
+          newPassword: 'Editor-Pass-1',
+        })
+        .expect(200);
+      const asEditor = (req: request.Test) =>
+        req.set('Authorization', `Bearer ${changed.body.accessToken}`);
+
+      await asEditor(api().get('/api/v1/admin/stores')).expect(200);
+      await asEditor(api().get('/api/v1/admin/stats')).expect(200);
+      await asEditor(api().patch(`/api/v1/admin/stores/${storeId}`))
+        .send({ description: 'Edited by an editor' })
+        .expect(200);
+      await asEditor(api().delete(`/api/v1/admin/stores/${storeId}`)).expect(
+        403,
+      );
+      await asEditor(
+        api().delete(`/api/v1/admin/stores/${storeId}/members/${ownerId}`),
+      ).expect(403);
+      await asEditor(
+        api().post(`/api/v1/admin/offers/${randomUUID()}/remove`),
+      ).expect(403);
+      await asEditor(api().get('/api/v1/admin/users')).expect(403);
+      await asEditor(api().get('/api/v1/admin/users/team')).expect(403);
+      await asEditor(api().post('/api/v1/admin/users'))
+        .send({ name: 'X', email: `x-${editorEmail}`, role: 'ADMIN' })
+        .expect(403);
+    });
+
+    it('lists the team by role', async () => {
+      const res = await asAdmin(
+        api().get('/api/v1/admin/users/team').query({ pageSize: 100 }),
+      ).expect(200);
+      const roles = new Set(
+        res.body.items.map((user: { role: string }) => user.role),
+      );
+      expect(roles).toEqual(new Set(['ADMIN', 'EDITOR']));
+
+      const editors = await asAdmin(
+        api()
+          .get('/api/v1/admin/users/team')
+          .query({ role: 'EDITOR', search: editorEmail }),
+      ).expect(200);
+      expect(editors.body.items).toHaveLength(1);
+      await asAdmin(
+        api().get('/api/v1/admin/users/team').query({ role: 'MERCHANT' }),
+      ).expect(400);
+      expect(
+        res.body.items.some(
+          (user: { email: string }) => user.email === editorEmail,
+        ),
+      ).toBe(true);
+    });
+
+    it("refuses a taken email or a role that isn't on the team", async () => {
+      const taken = await asAdmin(api().post('/api/v1/admin/users'))
+        .send({ name: 'Again', email: editorEmail, role: 'ADMIN' })
+        .expect(409);
+      expect(taken.body.error).toBe('EmailTaken');
+
+      await asAdmin(api().post('/api/v1/admin/users'))
+        .send({ name: 'Shop', email: `shop-${editorEmail}`, role: 'MERCHANT' })
+        .expect(400);
+    });
+
+    it("edits a team member's name and role, and resets their password", async () => {
+      const user = await asAdmin(
+        api().get(`/api/v1/admin/users/${editorId}`),
+      ).expect(200);
+      expect(user.body).toMatchObject({ email: editorEmail, role: 'EDITOR' });
+
+      const edited = await asAdmin(
+        api().patch(`/api/v1/admin/users/${editorId}`),
+      )
+        .send({ name: ' Sara K ', role: 'ADMIN' })
+        .expect(200);
+      expect(edited.body).toMatchObject({ name: 'Sara K', role: 'ADMIN' });
+      await asAdmin(api().patch(`/api/v1/admin/users/${editorId}`))
+        .send({ role: 'EDITOR' })
+        .expect(200);
+
+      const reset = await asAdmin(
+        api().post(`/api/v1/admin/users/${editorId}/reset-password`),
+      ).expect(200);
+      const login = await api()
+        .post('/api/v1/auth/login')
+        .send({
+          identifier: editorEmail,
+          password: reset.body.temporaryPassword,
+        })
+        .expect(200);
+      expect(login.body.user.mustChangePassword).toBe(true);
+    });
+
+    it('refuses role changes that would lock someone out or leave the team', async () => {
+      const own = await asAdmin(api().patch(`/api/v1/admin/users/${adminId}`))
+        .send({ role: 'EDITOR' })
+        .expect(400);
+      expect(own.body.message).toBe('You cannot change your own role');
+      // Renaming yourself is fine.
+      await asAdmin(api().patch(`/api/v1/admin/users/${adminId}`))
+        .send({ name: 'E2E Admin', role: 'ADMIN' })
+        .expect(200);
+
+      await asAdmin(api().patch(`/api/v1/admin/users/${ownerId}`))
+        .send({ name: 'Owner' })
+        .expect(400);
+      await asAdmin(api().patch(`/api/v1/admin/users/${editorId}`))
+        .send({ role: 'MERCHANT' })
+        .expect(400);
+      await asAdmin(api().get(`/api/v1/admin/users/${randomUUID()}`)).expect(
+        404,
+      );
     });
 
     it('stops admins from disabling themselves', async () => {
