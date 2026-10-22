@@ -19,7 +19,10 @@ import {
 } from '@nestjs/swagger';
 import type { AuthUser } from '../../common/auth/auth-user.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
-import { Roles } from '../../common/decorators/roles.decorator.js';
+import {
+  DASHBOARD_ROLES,
+  Roles,
+} from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../generated/prisma/enums.js';
 import {
   AddMemberDto,
@@ -40,7 +43,7 @@ import { StoresService } from './stores.service.js';
 
 @ApiTags('Admin: Stores')
 @ApiBearerAuth()
-@Roles(UserRole.ADMIN)
+@Roles(...DASHBOARD_ROLES)
 @Controller('admin/stores')
 export class AdminStoresController {
   constructor(private readonly stores: StoresService) {}
@@ -86,6 +89,7 @@ export class AdminStoresController {
   }
 
   @Delete(':id')
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   @ApiOperation({
@@ -133,6 +137,7 @@ export class AdminStoresController {
   }
 
   @Delete(':id/members/:userId')
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiNoContentResponse()
   @ApiOperation({

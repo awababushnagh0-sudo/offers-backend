@@ -41,6 +41,12 @@ const DEV_USERS = [
     password: 'Admin12345!',
   },
   {
+    role: UserRole.EDITOR,
+    name: 'Dev Editor',
+    email: 'editor@offers.local',
+    password: 'Editor12345!',
+  },
+  {
     role: UserRole.MERCHANT,
     name: 'Demo Owner',
     phone: '+218910000001',
@@ -187,6 +193,7 @@ async function main() {
     }
     console.log(
       'Dev logins: admin@offers.local / Admin12345!, ' +
+        'editor@offers.local / Editor12345!, ' +
         '0910000001 / Merchant123! (owner), 0920000002 / Staff123! (staff)',
     );
   }

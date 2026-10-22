@@ -1,8 +1,10 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { Roles } from '../../common/decorators/roles.decorator.js';
-import { UserRole } from '../../generated/prisma/enums.js';
+import {
+  DASHBOARD_ROLES,
+  Roles,
+} from '../../common/decorators/roles.decorator.js';
 import { ResolvedLocationDto, ResolveLocationDto } from './dto/location.dto.js';
 import { LocationsService } from './locations.service.js';
 
@@ -10,7 +12,7 @@ const MINUTE_MS = 60_000;
 
 @ApiTags('Admin: Locations')
 @ApiBearerAuth()
-@Roles(UserRole.ADMIN)
+@Roles(...DASHBOARD_ROLES)
 @Controller('admin/locations')
 export class AdminLocationsController {
   constructor(private readonly locations: LocationsService) {}

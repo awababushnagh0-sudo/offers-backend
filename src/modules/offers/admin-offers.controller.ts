@@ -9,7 +9,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Roles } from '../../common/decorators/roles.decorator.js';
+import {
+  DASHBOARD_ROLES,
+  Roles,
+} from '../../common/decorators/roles.decorator.js';
 import { UserRole } from '../../generated/prisma/enums.js';
 import { AdminOffersService } from './admin-offers.service.js';
 import {
@@ -20,7 +23,7 @@ import {
 
 @ApiTags('Admin: Offers')
 @ApiBearerAuth()
-@Roles(UserRole.ADMIN)
+@Roles(...DASHBOARD_ROLES)
 @Controller('admin/offers')
 export class AdminOffersController {
   constructor(private readonly offers: AdminOffersService) {}
@@ -32,6 +35,7 @@ export class AdminOffersController {
   }
 
   @Post(':id/remove')
+  @Roles(UserRole.ADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Take an offer down',

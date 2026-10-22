@@ -8,8 +8,10 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Roles } from '../../common/decorators/roles.decorator.js';
-import { UserRole } from '../../generated/prisma/enums.js';
+import {
+  DASHBOARD_ROLES,
+  Roles,
+} from '../../common/decorators/roles.decorator.js';
 import { CategoriesService } from './categories.service.js';
 import {
   CategoryDto,
@@ -19,7 +21,7 @@ import {
 
 @ApiTags('Admin: Categories')
 @ApiBearerAuth()
-@Roles(UserRole.ADMIN)
+@Roles(...DASHBOARD_ROLES)
 @Controller('admin/categories')
 export class AdminCategoriesController {
   constructor(private readonly categories: CategoriesService) {}

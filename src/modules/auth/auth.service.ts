@@ -20,7 +20,11 @@ import { PasswordService } from './password.service.js';
 import type { SocialProfile } from './social-token.verifier.js';
 import { TokenService } from './token.service.js';
 
-const STAFF_ROLES: UserRole[] = [UserRole.MERCHANT, UserRole.ADMIN];
+const STAFF_ROLES: UserRole[] = [
+  UserRole.MERCHANT,
+  UserRole.ADMIN,
+  UserRole.EDITOR,
+];
 
 @Injectable()
 export class AuthService {
@@ -54,7 +58,7 @@ export class AuthService {
     return this.completeLogin(user, userAgent);
   }
 
-  /** Merchant (phone) or admin (email) login with a password. */
+  /** Merchant (phone) or admin/editor (email) login with a password. */
   async loginWithPassword(
     identifier: string,
     password: string,

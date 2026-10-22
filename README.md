@@ -38,6 +38,7 @@ Dev logins created by the seed (only when `DEV_AUTH_ENABLED=true`, never in prod
 | Role | Login | Password |
 |---|---|---|
 | Admin | `admin@offers.local` | `Admin12345!` |
+| Editor (dashboard, can't delete or manage the team) | `editor@offers.local` | `Editor12345!` |
 | Store owner (demo store) | `0910000001` | `Merchant123!` |
 | Store staff (Hay Al Andalus branch) | `0920000002` | `Staff123!` |
 
